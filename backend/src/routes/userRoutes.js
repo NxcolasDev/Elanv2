@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-// TESTE
-router.get("/", (req, res) => {
-  res.json({ message: "Users route working" });
-});
+const { syncUser, getUser } = require("../controllers/userController");
+
+router.post("/sync", syncUser);
+router.get("/:uid", getUser);
 
 module.exports = router;

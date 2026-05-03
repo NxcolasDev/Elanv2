@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const { generateExam } = require("../controllers/examController");
 
-router.get("/", (req, res) => {
-  res.json({ message: "Exams route working" });
-});
+router.post("/generate", generateExam);
 
 module.exports = router;
