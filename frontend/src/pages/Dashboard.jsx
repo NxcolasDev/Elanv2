@@ -8,23 +8,30 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import MainLayout from "../layouts/MainLayout";
+import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Dashboard() {
+
+  const navigate = useNavigate(); // ✅ AGORA CORRETO
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const progressData = [
-  { name: "Semana 1", ielts: 4.5, delf: 3.0 },
-  { name: "Semana 2", ielts: 5.0, delf: 3.5 },
-  { name: "Semana 3", ielts: 5.5, delf: 4.0 },
-  { name: "Semana 4", ielts: 6.0, delf: 4.5 },
-];
+    { name: "Semana 1", ielts: 4.5, delf: 3.0 },
+    { name: "Semana 2", ielts: 5.0, delf: 3.5 },
+    { name: "Semana 3", ielts: 5.5, delf: 4.0 },
+    { name: "Semana 4", ielts: 6.0, delf: 4.5 },
+  ];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const uid = params.get("uid");
 
     if (!uid) {
-      setLoading(false);
+      window.location.href = "/";
       return;
     }
 
@@ -60,143 +67,156 @@ export default function Dashboard() {
     );
   }
 
-  // progresso fake (depois vira cálculo real)
   const progress = 65;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <MainLayout>
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center px-6 py-5 border-b border-purple-900/30">
+      <div className="min-h-screen text-white">
 
-        <div>
-          <h1 className="text-2xl font-bold text-purple-500">
-            ELAN
-          </h1>
-          <p className="text-xs text-gray-500">
-            Plataforma de Simulados de Idiomas
-          </p>
-        </div>
+        {/* HEADER */}
+        <div className="flex justify-between items-center px-6 py-5 border-b border-purple-900/30">
 
-        <div className="flex items-center gap-3 bg-[#111] px-3 py-2 rounded-xl border border-purple-900/40">
-          <img
-            src={user.photoURL}
-            className="w-9 h-9 rounded-full"
-          />
-          <span className="text-sm text-gray-300">
-            {user.name}
-          </span>
-        </div>
+          <div>
+            <div className="flex items-center gap-3">
 
-      </div>
+              <img 
+                src={logo}
+                alt="ELAN logo"
+                className="w-8 h-8"
+              />
 
-      {/* PROGRESSO GERAL */}
-      <div className="p-6">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-blue-400 bg-clip-text text-transparent">
+                ELAN
+              </h1>
 
-        <h2 className="text-sm text-gray-400 mb-3">
-          Seu progresso geral
-        </h2>
+            </div>
 
-        <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-5">
-
-          <div className="w-full bg-black rounded-full h-2 mb-2">
-            <div
-              className="bg-purple-500 h-2 rounded-full"
-              style={{ width: `${progress}%` }}
-            />
+            <p className="text-xs text-gray-500">
+              Plataforma de Simulados
+            </p>
           </div>
 
-          <p className="text-xs text-gray-500">
-            {progress}% do sistema concluído
-          </p>
+          <div className="flex items-center gap-3 bg-[#111] px-3 py-2 rounded-xl border border-purple-900/40">
+            <img src={user.photoURL} className="w-9 h-9 rounded-full" />
+            <span className="text-sm text-gray-300">
+              {user.name}
+            </span>
+          </div>
 
         </div>
-      </div>
-      <div className="px-6 mt-6">
 
-  <h2 className="text-sm text-gray-400 mb-3">
-    Evolução de desempenho
-  </h2>
+        {/* PROGRESSO */}
+        <div className="p-6">
 
-  <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-5">
-
-    <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={progressData}>
-
-        <XAxis dataKey="name" stroke="#888" />
-        <YAxis stroke="#888" />
-        <Tooltip />
-
-        <Line
-          type="monotone"
-          dataKey="ielts"
-          stroke="#a855f7"
-          strokeWidth={2}
-        />
-
-        <Line
-          type="monotone"
-          dataKey="delf"
-          stroke="#60a5fa"
-          strokeWidth={2}
-        />
-
-      </LineChart>
-        </ResponsiveContainer>
-
-    </div>
-
-    </div>
-
-      {/* CARDS */}
-      <div className="px-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
-
-        {/* IELTS */}
-        <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-6 hover:border-purple-500 transition">
-
-          <h2 className="text-purple-400 font-bold mb-4">
-            IELTS
+          <h2 className="text-sm text-gray-400 mb-3">
+            Seu progresso geral
           </h2>
 
-          <div className="space-y-3 text-sm text-gray-300">
+          <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-5">
 
-            <p>📘 Reading: {user.ielts?.reading}</p>
-            <p>✍️ Writing: {user.ielts?.writing}</p>
-            <p>🎧 Listening: {user.ielts?.listening}</p>
-            <p>🗣️ Speaking: {user.ielts?.speaking}</p>
+            <div className="w-full bg-black rounded-full h-2 mb-2">
+              <div
+                className="bg-purple-500 h-2 rounded-full"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <p className="text-xs text-gray-500">
+              {progress}% concluído
+            </p>
 
           </div>
+        </div>
 
-          <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 transition py-2 rounded-xl text-sm">
-            Fazer simulado IELTS
-          </button>
+        {/* GRÁFICO */}
+        <div className="px-6 mt-6">
+
+          <h2 className="text-sm text-gray-400 mb-3">
+            Evolução
+          </h2>
+
+          <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-5">
+
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={progressData}>
+                <XAxis dataKey="name" stroke="#888" />
+                <YAxis stroke="#888" />
+                <Tooltip />
+
+                <Line
+                  type="monotone"
+                  dataKey="ielts"
+                  stroke="#a855f7"
+                  strokeWidth={2}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="delf"
+                  stroke="#60a5fa"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+
+          </div>
 
         </div>
 
-        {/* DELF */}
-        <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-6 hover:border-purple-500 transition">
+        {/* CARDS */}
+        <div className="px-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
 
-          <h2 className="text-purple-400 font-bold mb-4">
-            DELF
-          </h2>
+          {/* IELTS */}
+          <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-6">
 
-          <div className="space-y-3 text-sm text-gray-300">
+            <h2 className="text-purple-400 font-bold mb-4">
+              IELTS
+            </h2>
 
-            <p>📘 Reading: {user.delf?.reading}</p>
-            <p>✍️ Writing: {user.delf?.writing}</p>
-            <p>🎧 Listening: {user.delf?.listening}</p>
-            <p>🗣️ Speaking: {user.delf?.speaking}</p>
+            <div className="space-y-2 text-sm text-gray-300">
+              <p>Reading: {user.ielts?.reading}</p>
+              <p>Writing: {user.ielts?.writing}</p>
+              <p>Listening: {user.ielts?.listening}</p>
+              <p>Speaking: {user.ielts?.speaking}</p>
+            </div>
+
+            <button 
+              onClick={() => navigate("/simulado?type=ielts")}
+              className="mt-4 w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 transition py-2 rounded-xl text-sm font-semibold"
+            >
+              Fazer simulado IELTS
+            </button>
 
           </div>
 
-          <button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 transition py-2 rounded-xl text-sm">
-            Fazer simulado DELF
-          </button>
+          {/* DELF */}
+          <div className="bg-[#111] border border-purple-900/40 rounded-2xl p-6">
+
+            <h2 className="text-purple-400 font-bold mb-4">
+              DELF
+            </h2>
+
+            <div className="space-y-2 text-sm text-gray-300">
+              <p>Reading: {user.delf?.reading}</p>
+              <p>Writing: {user.delf?.writing}</p>
+              <p>Listening: {user.delf?.listening}</p>
+              <p>Speaking: {user.delf?.speaking}</p>
+            </div>
+
+            <button 
+              onClick={() => navigate("/simulado?type=delf")}
+              className="mt-4 w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 transition py-2 rounded-xl text-sm font-semibold"
+            >
+              Fazer simulado DELF
+            </button>
+
+          </div>
 
         </div>
 
       </div>
 
-    </div>
+    </MainLayout>
   );
 }
