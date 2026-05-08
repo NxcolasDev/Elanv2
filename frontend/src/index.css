@@ -7,3 +7,54 @@ body {
   color: white;
   font-family: system-ui, sans-serif;
 }
+
+@layer utilities {
+  .elan-bg {
+    background:
+      radial-gradient(circle at 16% 8%, rgba(124, 58, 237, 0.32), transparent 28%),
+      radial-gradient(circle at 86% 12%, rgba(59, 130, 246, 0.24), transparent 26%),
+      radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.18), transparent 34%),
+      #070710;
+  }
+
+  .elan-glass {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, rgba(18, 18, 34, 0.84), rgba(8, 8, 18, 0.72));
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .elan-glow-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .elan-glow-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.28), transparent 38%, rgba(59, 130, 246, 0.18));
+    opacity: 0.55;
+  }
+
+  .elan-glow-card > * {
+    position: relative;
+  }
+
+  .elan-neon-text {
+    color: #fff;
+    text-shadow: 0 0 28px rgba(168, 85, 247, 0.48);
+  }
+
+  .elan-orbit {
+    background-image:
+      radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+      radial-gradient(circle, rgba(168, 85, 247, 0.28) 1px, transparent 1px);
+    background-position: 0 0, 18px 22px;
+    background-size: 52px 52px, 66px 66px;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 78%, transparent);
+  }
+}
