@@ -58,3 +58,37 @@ body {
     mask-image: linear-gradient(to bottom, transparent, black 18%, black 78%, transparent);
   }
 }
+
+.elan-flow-gradient {
+  background: linear-gradient(
+    90deg,
+    #a855f7,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #a855f7
+  );
+
+  background-size: 300% 300%;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: elanGradientFlow 8s ease infinite;
+
+  filter: drop-shadow(0 0 18px rgba(168, 85, 247, 0.35));
+}
+
+@keyframes elanGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}

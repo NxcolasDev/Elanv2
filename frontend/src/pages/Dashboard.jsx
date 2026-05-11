@@ -18,7 +18,11 @@ import logo from "../assets/logo.png";
 import { exams } from "../data/exams";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { useAuth } from "../hooks/useAuth";
-import { getExamBreakdown, getExamHistory, getHistoryStats } from "../utils/examHistory";
+import {
+  getExamBreakdown,
+  getExamFilteredHistory,
+  getHistoryStats,
+} from "../utils/examHistory";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -26,9 +30,14 @@ export default function Dashboard() {
   const { activeExam } = useActiveExam();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [history] = useState(() => getExamHistory());
+  const [history, setHistory] = useState([]);
 
   const exam = exams[activeExam] || exams.IELTS;
+  useEffect(() => {
+  const filtered = getExamFilteredHistory(activeExam);
+
+  setHistory(filtered);
+}, [activeExam]);
   const stats = getHistoryStats(history);
   const skillData = getExamBreakdown(history);
   const chartData = history

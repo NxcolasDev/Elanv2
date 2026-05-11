@@ -15,6 +15,7 @@ import ExamSwitcher from "../components/ExamSwitcher";
 import heroImage from "../assets/hero-human-ai.png";
 import logo from "../assets/logo.png";
 import { useAuth } from "../hooks/useAuth";
+import lumiImage from "../assets/Lumi.png";
 
 const examCards = [
   {
@@ -56,14 +57,14 @@ export default function Home() {
           <img
             src={heroImage}
             alt=""
-            className="h-full w-full object-cover object-center opacity-70 saturate-125"
+            className="h-full w-full object-cover object-center opacity-90 saturate-125"
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,#070710_0%,rgba(7,7,16,0.82)_38%,rgba(7,7,16,0.32)_100%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_34%,rgba(168,85,247,0.34),transparent_24%),radial-gradient(circle_at_82%_22%,rgba(59,130,246,0.30),transparent_22%)]" />
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-6">
-          <nav className="mt-5 flex items-center justify-between rounded-2xl border border-white/10 bg-black/24 px-4 py-3 shadow-[0_0_60px_rgba(124,58,237,0.24)] backdrop-blur-xl">
+          <nav className="mt-5 flex items-center justify-between rounded-2xl border border-purple-500/10 bg-black/35 px-4 py-3 shadow-[0_0_60px_rgba(124,58,237,0.24)] backdrop-blur-xl">
             <Link to="/" className="flex items-center gap-3">
               <span className="rounded-xl bg-purple-500/10 p-2 shadow-[0_0_28px_rgba(168,85,247,0.36)]">
                 <img src={logo} alt="ELAN" className="h-8 w-8" />
@@ -78,6 +79,7 @@ export default function Home() {
               <a href="#inicio" className="transition hover:text-white">Início</a>
               <a href="#exames" className="transition hover:text-white">Exames</a>
               <a href="#sobre" className="transition hover:text-white">Sobre</a>
+              <a href="#lumi" className="transition hover:text-white">Lumi AI</a>
               <Link to="/dashboard" className="transition hover:text-white">Dashboard</Link>
             </div>
 
@@ -122,14 +124,16 @@ export default function Home() {
 
           <main id="inicio" className="flex flex-1 items-center py-16">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-500/15 px-4 py-2 text-sm text-purple-50 shadow-[0_0_30px_rgba(168,85,247,0.24)] backdrop-blur">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-500/15 px-4 py-2 text-sm text-purple-50 shadow-[0_0_40px_rgba(168,85,247,0.32)] animate-pulse backdrop-blur">
                 <Sparkles size={15} />
                 IELTS + DELF/DALF com feedback de IA
               </div>
 
-              <h1 className="elan-neon-text text-5xl font-black leading-[1.02] md:text-7xl">
+            <h1 className="text-5xl font-black leading-[1.02] md:text-7xl">
+              <span className="elan-flow-gradient">
                 Domine idiomas com IA.
-              </h1>
+              </span>
+            </h1>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300">
                 O ELAN combina simulados, correções inteligentes, flashcards e histórico
@@ -247,6 +251,103 @@ export default function Home() {
         </div>
       </section>
 
+      <section
+  id="lumi"
+  className="relative z-10 mx-auto max-w-7xl px-6 py-24"
+>
+  <div className="grid items-center gap-16 lg:grid-cols-2">
+
+    {/* LEFT */}
+
+    <div>
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/10 px-4 py-2 text-sm text-purple-200">
+        <Sparkles size={15} />
+        Conheça a Lumi AI
+      </div>
+
+      <h2 className="text-5xl font-black leading-tight md:text-6xl">
+        Sua mentora inteligente de idiomas.
+      </h2>
+
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300">
+        A Lumi acompanha sua evolução no IELTS e DELF/DALF,
+        corrige redações, ajuda no speaking e oferece feedback
+        inteligente baseado nos critérios reais das provas.
+      </p>
+
+      <div className="mt-10 grid gap-4 md:grid-cols-2">
+
+        <div className="elan-glass rounded-3xl p-5">
+          <Brain className="mb-4 text-purple-300" size={26} />
+
+          <h3 className="text-xl font-bold">
+            Correção Inteligente
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-gray-400">
+            Feedback baseado nos critérios oficiais.
+          </p>
+        </div>
+
+        <div className="elan-glass rounded-3xl p-5">
+          <Mic className="mb-4 text-blue-300" size={26} />
+
+          <h3 className="text-xl font-bold">
+            Speaking Assistant
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-gray-400">
+            Ajuda com fluência, pronúncia e confiança.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    {/* RIGHT */}
+
+    <div className="relative flex justify-center">
+
+      <div className="absolute h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
+
+      <img
+        src={lumiImage}
+        alt="Lumi AI"
+        className="relative z-10 w-full max-w-md drop-shadow-[0_0_60px_rgba(168,85,247,0.45)]"
+      />
+    </div>
+  </div>
+
+  {/* CHAT */}
+
+  <div className="mt-24">
+    <div className="elan-glass mx-auto max-w-4xl rounded-[2rem] p-8">
+
+      <p className="mb-8 text-center text-3xl font-black">
+        Converse com a Lumi
+      </p>
+
+      <div className="space-y-5">
+
+        <div className="ml-auto max-w-md rounded-3xl bg-purple-600 px-5 py-4 text-sm">
+          How can I improve my speaking?
+        </div>
+
+        <div className="max-w-xl rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300">
+          Try speaking daily using IELTS topics and focus on fluency first.
+        </div>
+
+      </div>
+
+      <button
+        className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-500 px-6 py-4 font-bold transition hover:scale-[1.01]"
+      >
+        Open Lumi Assistant
+      </button>
+    </div>
+  </div>
+</section>
+
       <section className="relative z-10 mx-auto max-w-7xl px-6 pb-24">
         <div className="elan-glass elan-glow-card rounded-[2rem] p-8 text-center md:p-12">
           <h2 className="text-4xl font-black">Entre no modo simulado quando estiver pronto.</h2>
@@ -263,6 +364,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      
     </div>
   );
 }

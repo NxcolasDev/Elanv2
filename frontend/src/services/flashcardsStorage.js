@@ -101,6 +101,7 @@ export function deleteFlashcardCard(deckId, cardId) {
 
 export function reviewFlashcard(deckId, cardId, quality = "good") {
   const decks = getFlashcardDecks();
+
   const nextDecks = decks.map((deck) => {
     if (deck.id !== deckId) return deck;
 
@@ -109,17 +110,62 @@ export function reviewFlashcard(deckId, cardId, quality = "good") {
       cards: (Array.isArray(deck.cards) ? deck.cards : []).map((card) => {
         if (card.id !== cardId) return card;
 
-        const repetitions = quality === "again" ? 0 : Number(card.repetitions || 0) + 1;
-        const intervalDays =
-          quality === "again" ? 1 : Math.min(30, Math.max(1, Number(card.intervalDays || 1) * 2));
+        let intervalMinutes = 1;
+
+        const repetitions = Number(card.repetitions || 0);
+
+        switch (quality) {
+          case "again":
+            intervalMinutes = 1;
+            break;
+
+          case "hard":
+            intervalMinutes = repetitions < 3 ? 5 : 60;
+            break;
+
+          case "good":
+            intervalMinutes =
+              repetitions === 0
+                ? 10
+                : repetitions === 1
+                ? 1440
+                : repetitions === 2
+                ? 4320
+                : repetitions === 3
+                ? 10080
+                : 43200;
+            break;
+
+          case "easy":
+            intervalMinutes =
+              repetitions === 0
+                ? 7200
+                : repetitions === 1
+                ? 10080
+                : repetitions === 2
+                ? 43200
+                : 86400;
+            break;
+
+          default:
+            intervalMinutes = 10;
+        }
+
         const dueAt = new Date();
-        dueAt.setDate(dueAt.getDate() + intervalDays);
+
+        dueAt.setMinutes(
+          dueAt.getMinutes() + intervalMinutes
+        );
 
         return {
           ...card,
-          repetitions,
-          intervalDays,
+          repetitions:
+            quality === "again"
+              ? 0
+              : repetitions + 1,
+
           dueAt: dueAt.toISOString(),
+
           lastReviewedAt: new Date().toISOString(),
         };
       }),

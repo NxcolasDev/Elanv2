@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 
-export function useSpeechRecognition() {
+export function useSpeechRecognition(activeExam = "ielts") {
   const recognitionRef = useRef(null);
   const finalTranscriptRef = useRef("");
+
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [finalTranscript, setFinalTranscript] = useState("");
@@ -18,20 +19,32 @@ export function useSpeechRecognition() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
+
+    recognition.lang =
+      activeExam === "delf"
+        ? "fr-FR"
+        : "en-US";
+
     recognition.interimResults = true;
     recognition.continuous = true;
+    recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => {
-      setListening(true);
-      setSpeechError("");
-    };
+  recognition.onstart = () => {
+    console.log("LANG:", recognition.lang);
+
+    setListening(true);
+    setSpeechError("");
+  };
 
     recognition.onresult = (event) => {
       let interim = "";
       let finalChunk = "";
 
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index += 1
+      ) {
         const text = event.results[index][0].transcript;
 
         if (event.results[index].isFinal) {
@@ -42,15 +55,22 @@ export function useSpeechRecognition() {
       }
 
       if (finalChunk) {
-        finalTranscriptRef.current = `${finalTranscriptRef.current}${finalChunk}`;
-        setFinalTranscript(finalTranscriptRef.current.trim());
+        finalTranscriptRef.current =
+          `${finalTranscriptRef.current}${finalChunk}`;
+
+        setFinalTranscript(
+          finalTranscriptRef.current.trim()
+        );
       }
 
       setTranscript(interim);
     };
 
     recognition.onerror = (event) => {
-      setSpeechError(event.error || "Erro no reconhecimento de voz.");
+      setSpeechError(
+        event.error || "Erro no reconhecimento de voz."
+      );
+
       setListening(false);
     };
 
@@ -66,6 +86,7 @@ export function useSpeechRecognition() {
     if (listening) return;
 
     const recognition = getRecognition();
+
     if (!recognition) return;
 
     recognitionRef.current = recognition;
@@ -78,6 +99,7 @@ export function useSpeechRecognition() {
 
   const resetTranscript = () => {
     finalTranscriptRef.current = "";
+
     setTranscript("");
     setFinalTranscript("");
     setSpeechError("");

@@ -45,7 +45,7 @@ export default function Speaking() {
     startListening,
     stopListening,
     resetTranscript,
-  } = useSpeechRecognition();
+  } = useSpeechRecognition(isDelf ? "delf" : "ielts");
 
   const currentQuestions = useMemo(
     () => (Array.isArray(questions?.[currentPart]) ? questions[currentPart] : []),
