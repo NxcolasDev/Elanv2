@@ -67,31 +67,31 @@ Originally built as a personal learning platform, ELAN evolved into a complete s
 
 ## Dashboard
 
-![Dashboard](./assets/dashboard.png)
+![Dashboard](./Assets/Dashboard.png)
 
 ---
 
 ## Flashcards
 
-![Flashcards](./assets/flashcards.png)
+![Flashcards](./Assets/flashcards.png)
 
 ---
 
 ## Models
 
-![Models](./assets/models.png)
+![Models](./Assets/Models.png)
 
 ---
 
 ## YouTube Study
 
-![YouTube Study](./assets/youtube.png)
+![YouTube Study](./Assets/Youtube.png)
 
 ---
 
 ## Full Simulation
 
-![Simulation](./assets/simulation.png)
+![Simulation](./Assets/Simulation.png)
 
 ---
 
