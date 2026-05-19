@@ -195,6 +195,21 @@ VITE_API_BASE_URL=http://localhost:5000
 
 ---
 
+# Project Status
+
+ELAN is currently in version 1.0.
+
+All core systems are functional and operational, including:
+- Flashcards
+- AI study tools
+- YouTube study mode
+- IELTS/DELF simulations
+- Writing and speaking practice
+
+Some polishing, UI refinements, and additional improvements are still planned for future versions.
+
+This version represents the first stable public release of the project.
+
 # Documentation
 
 Technical documentation and Electron preparation files are available inside the `/docs` folder.
