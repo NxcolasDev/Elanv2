@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import { BookOpen, CheckCircle2, Loader2, RotateCcw } from "lucide-react";
 import ExamSwitcher from "../components/ExamSwitcher";
 import MainLayout from "../layouts/MainLayout";
@@ -7,8 +6,7 @@ import { expandQuestions, readingContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { saveExamResult } from "../utils/examHistory";
 import { toIELTSBand } from "../utils/scoring";
-
-const API = "http://localhost:5000/api/exams/generate";
+import { api } from "../services/api";
 
 function normalizeQuestion(question, index) {
   if (!question || typeof question !== "object") return null;
@@ -80,7 +78,7 @@ export default function Reading() {
         return;
       }
 
-      const response = await axios.post(API, { mode: "reading" }, { timeout: 15000 });
+      const response = await api.post("/api/exams/generate", { mode: "reading" }, { timeout: 15000 });
       setExam(normalizeExam(response.data?.data, localContent));
     } catch (err) {
       console.error("Erro ao gerar prova:", err);

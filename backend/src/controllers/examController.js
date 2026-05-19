@@ -1,9 +1,22 @@
 const { getRandomTopics } = require("../utils/examGenerator");
 const { generateText } = require("../services/aiProvider");
 
+function cleanAiJson(value) {
+  return String(value || "")
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
 const generateExam = async (req, res) => {
   try {
-    const { mode, text, task } = req.body;
+    const { mode, text, context, focus } = req.body;
+
+    if (!mode) {
+      return res.status(400).json({
+        error: "Mode is required"
+      });
+    }
 
     // 🔹 TEMAS
     if (mode === "topics") {
@@ -13,6 +26,94 @@ const generateExam = async (req, res) => {
         success: true,
         topics
       });
+    }
+
+    if (mode === "studyAssistant") {
+      if (!text || typeof text !== "string") {
+        return res.status(400).json({
+          error: "Question text is required"
+        });
+      }
+
+      const prompt = `
+You are Lumi, ELAN's IELTS and DELF study assistant.
+
+Help the learner with practical, exam-focused guidance.
+You can explain:
+- vocabulary
+- grammar
+- pronunciation
+- IELTS Writing Task 1 and Task 2
+- IELTS Speaking Part 1, Part 2, and Part 3
+- DELF production orale and production ecrite
+- listening strategies
+- linking words
+- band improvement strategies
+
+Keep the answer concise, clear, and useful.
+Explain why the structure is useful, when to use it, how it improves score, and the band/level that usually uses it when relevant.
+Do not claim official scores. Use cautious wording.
+
+Focus: ${focus || "general study support"}
+Page context:
+${context || "No extra context provided."}
+
+Learner question:
+${text}
+`;
+
+      const answer = await generateText(prompt);
+
+      return res.json({
+        success: true,
+        answer: cleanAiJson(answer)
+      });
+    }
+
+    if (mode === "modelStudy") {
+      const prompt = `
+Create one realistic study model for ELAN.
+
+Topic/focus:
+${focus || "IELTS and DELF language learning"}
+
+Return ONLY valid JSON:
+{
+  "title": "string",
+  "level": "string",
+  "model": "string",
+  "whyUseThis": "string",
+  "whenToUse": "string",
+  "scoreImpact": "string",
+  "typicalLevel": "string",
+  "examples": ["string", "string", "string"],
+  "practicePrompt": "string"
+}
+`;
+
+      const result = await generateText(prompt);
+
+      try {
+        return res.json({
+          success: true,
+          model: JSON.parse(cleanAiJson(result))
+        });
+      } catch {
+        return res.json({
+          success: true,
+          model: {
+            title: focus || "Study model",
+            level: "Adaptive",
+            model: result,
+            whyUseThis: "This structure helps you organize your answer clearly.",
+            whenToUse: "Use it when you need a reliable exam answer structure.",
+            scoreImpact: "It can improve coherence, vocabulary control, and task response.",
+            typicalLevel: "B1-C1 / Band 6-8",
+            examples: [],
+            practicePrompt: "Write your own version using the same structure."
+          }
+        });
+      }
     }
 
     // 🔥 SPEAKING
@@ -63,7 +164,7 @@ ${text}
       let parsed;
 
       try {
-        const clean = result.replace(/```json|```/g, "").trim();
+        const clean = cleanAiJson(result);
 
         parsed = JSON.parse(clean);
       } catch {
@@ -132,7 +233,7 @@ ${text}
       let parsed;
 
       try {
-        const clean = result.replace(/```json|```/g, "").trim();
+        const clean = cleanAiJson(result);
 
         parsed = JSON.parse(clean);
       } catch {
@@ -183,10 +284,7 @@ Return ONLY valid JSON:
       let parsed;
 
       try {
-        const clean = result
-          .replace(/```json/gi, "")
-          .replace(/```/g, "")
-          .trim();
+        const clean = cleanAiJson(result);
 
         parsed = JSON.parse(clean);
       } catch (err) {

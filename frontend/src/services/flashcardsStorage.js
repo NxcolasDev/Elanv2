@@ -1,6 +1,7 @@
 import { scopedKey } from "../utils/storageScope";
 
 const FLASHCARDS_KEY = "elan.flashcards";
+const DEFAULT_EASE_FACTOR = 2.5;
 
 const defaultDecks = [
   {
@@ -11,9 +12,13 @@ const defaultDecks = [
         id: "sample-card-1",
         front: "coherence",
         back: "logical connection and clarity between ideas",
-        intervalDays: 1,
+        easeFactor: DEFAULT_EASE_FACTOR,
         repetitions: 0,
+        interval: 0,
+        intervalDays: 0,
+        nextReviewDate: new Date().toISOString(),
         dueAt: new Date().toISOString(),
+        lastReviewed: null,
         createdAt: new Date().toISOString(),
       },
     ],
@@ -21,13 +26,35 @@ const defaultDecks = [
   },
 ];
 
+function normalizeCard(card) {
+  const nextReviewDate = card.nextReviewDate || card.dueAt || new Date().toISOString();
+
+  return {
+    ...card,
+    easeFactor: Number(card.easeFactor || DEFAULT_EASE_FACTOR),
+    repetitions: Number(card.repetitions || 0),
+    interval: Number(card.interval ?? card.intervalDays ?? 0),
+    intervalDays: Number(card.intervalDays ?? card.interval ?? 0),
+    nextReviewDate,
+    dueAt: nextReviewDate,
+    lastReviewed: card.lastReviewed || card.lastReviewedAt || null,
+  };
+}
+
+function normalizeDeck(deck) {
+  return {
+    ...deck,
+    cards: (Array.isArray(deck.cards) ? deck.cards : []).map(normalizeCard),
+  };
+}
+
 export function getFlashcardDecks() {
   try {
     const value = window.localStorage.getItem(scopedKey(FLASHCARDS_KEY));
     const parsed = value ? JSON.parse(value) : defaultDecks;
-    return Array.isArray(parsed) ? parsed : defaultDecks;
+    return Array.isArray(parsed) ? parsed.map(normalizeDeck) : defaultDecks.map(normalizeDeck);
   } catch {
-    return defaultDecks;
+    return defaultDecks.map(normalizeDeck);
   }
 }
 
@@ -43,8 +70,9 @@ export function saveFlashcardDecks(decks) {
   return safeDecks;
 }
 
-export function createFlashcardCard({ deckId, front, back }) {
+export function createFlashcardCard({ deckId, front, back, context = "" }) {
   const decks = getFlashcardDecks();
+  const now = new Date().toISOString();
   const nextDecks = decks.map((deck) => {
     if (deck.id !== deckId) return deck;
 
@@ -56,10 +84,15 @@ export function createFlashcardCard({ deckId, front, back }) {
           id: crypto.randomUUID?.() || `${Date.now()}`,
           front,
           back,
-          intervalDays: 1,
+          context,
+          easeFactor: DEFAULT_EASE_FACTOR,
           repetitions: 0,
-          dueAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
+          interval: 0,
+          intervalDays: 0,
+          nextReviewDate: now,
+          dueAt: now,
+          lastReviewed: null,
+          createdAt: now,
         },
       ],
     };
@@ -110,62 +143,56 @@ export function reviewFlashcard(deckId, cardId, quality = "good") {
       cards: (Array.isArray(deck.cards) ? deck.cards : []).map((card) => {
         if (card.id !== cardId) return card;
 
-        let intervalMinutes = 1;
-
         const repetitions = Number(card.repetitions || 0);
+        const currentEase = Number(card.easeFactor || DEFAULT_EASE_FACTOR);
+        let nextEaseFactor = currentEase;
+        let nextRepetitions;
+        let intervalDays = Number(card.interval ?? card.intervalDays ?? 0);
 
         switch (quality) {
-          case "again":
-            intervalMinutes = 1;
-            break;
-
           case "hard":
-            intervalMinutes = repetitions < 3 ? 5 : 60;
+            nextEaseFactor = Math.max(1.3, currentEase - 0.2);
+            nextRepetitions = Math.max(0, repetitions);
+            intervalDays = repetitions === 0 ? 0.04 : Math.max(0.25, Math.round(intervalDays * 0.6));
             break;
 
           case "good":
-            intervalMinutes =
+            nextRepetitions = repetitions + 1;
+            intervalDays =
               repetitions === 0
-                ? 10
+                ? 1
                 : repetitions === 1
-                ? 1440
-                : repetitions === 2
-                ? 4320
-                : repetitions === 3
-                ? 10080
-                : 43200;
+                ? 3
+                : Math.max(4, Math.round(intervalDays * currentEase));
             break;
 
           case "easy":
-            intervalMinutes =
+            nextEaseFactor = Math.min(3.2, currentEase + 0.15);
+            nextRepetitions = repetitions + 1;
+            intervalDays =
               repetitions === 0
-                ? 7200
-                : repetitions === 1
-                ? 10080
-                : repetitions === 2
-                ? 43200
-                : 86400;
+                ? 4
+                : Math.max(7, Math.round((intervalDays || 1) * nextEaseFactor * 1.25));
             break;
 
           default:
-            intervalMinutes = 10;
+            nextRepetitions = repetitions + 1;
+            intervalDays = repetitions === 0 ? 1 : Math.max(3, Math.round(intervalDays * currentEase));
         }
 
-        const dueAt = new Date();
+        const nextReview = new Date();
 
-        dueAt.setMinutes(
-          dueAt.getMinutes() + intervalMinutes
-        );
+        nextReview.setMinutes(nextReview.getMinutes() + Math.round(intervalDays * 24 * 60));
 
         return {
           ...card,
-          repetitions:
-            quality === "again"
-              ? 0
-              : repetitions + 1,
-
-          dueAt: dueAt.toISOString(),
-
+          easeFactor: nextEaseFactor,
+          repetitions: nextRepetitions,
+          interval: intervalDays,
+          intervalDays,
+          nextReviewDate: nextReview.toISOString(),
+          dueAt: nextReview.toISOString(),
+          lastReviewed: new Date().toISOString(),
           lastReviewedAt: new Date().toISOString(),
         };
       }),

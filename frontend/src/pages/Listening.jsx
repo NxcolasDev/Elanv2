@@ -74,11 +74,23 @@ export default function Listening() {
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(currentSection.script);
-    utterance.lang = content.lang;
-    utterance.rate = isDelf ? 0.88 : 0.92;
-    utterance.onstart = () => setPlaying(true);
-    utterance.onend = () => setPlaying(false);
-    utterance.onerror = () => setPlaying(false);
+
+const voices = window.speechSynthesis.getVoices();
+
+const preferredVoice = voices.find((voice) =>
+  isDelf
+    ? voice.lang.includes("fr")
+    : voice.lang.includes("en")
+);
+
+if (preferredVoice) {
+  utterance.voice = preferredVoice;
+}
+
+utterance.lang = content.lang;
+utterance.rate = isDelf ? 0.82 : 0.87;
+utterance.pitch = 1;
+utterance.volume = 1;
 
     setPlayCounts((previousCounts) => ({
       ...previousCounts,

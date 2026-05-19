@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../models/user");
 
 // cria ou atualiza usuário (sync do login)
 exports.syncUser = async (req, res) => {

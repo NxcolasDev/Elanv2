@@ -7,9 +7,12 @@ import {
   LayoutDashboard,
   LogOut,
   Mic,
+  Newspaper,
   NotebookPen,
   Pencil,
   ScrollText,
+  Sparkles,
+  Video,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ExamSwitcher from "../components/ExamSwitcher";
@@ -24,10 +27,36 @@ const navItems = [
   { to: "/speaking", label: "Speaking", icon: Mic },
   { to: "/writing", label: "Writing", icon: Pencil },
   { to: "/flashcards", label: "Flashcards", icon: Layers },
-  { to: "/history", label: "Histórico", icon: ScrollText },
-  { to: "/notes", label: "Anotações", icon: NotebookPen },
+  { to: "/models", label: "Models", icon: Sparkles },
+  { to: "/youtube", label: "YouTube", icon: Video },
+  { to: "/history", label: "Historico", icon: ScrollText },
+  { to: "/notes", label: "Anotacoes", icon: NotebookPen },
   { to: "/schedule", label: "Cronograma", icon: CalendarDays },
+  { to: "/news", label: "News", icon: Newspaper },
 ];
+
+function NavigationItems({ compact = false }) {
+  return navItems.map(({ to, label, icon: Icon }) => (
+    <NavLink
+      key={to}
+      to={to}
+      className={({ isActive }) =>
+        compact
+          ? `flex min-w-[74px] flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] transition ${
+              isActive ? "bg-purple-500/20 text-white" : "text-gray-400"
+            }`
+          : `group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition duration-200 ${
+              isActive
+                ? "bg-gradient-to-r from-purple-500/24 to-blue-500/12 text-white shadow-[0_0_30px_rgba(124,58,237,0.18),inset_0_0_0_1px_rgba(168,85,247,0.28)]"
+                : "text-gray-400 hover:bg-white/6 hover:text-white"
+            }`
+      }
+    >
+      <Icon size={17} className={compact ? "" : "text-purple-200/80 transition group-hover:text-purple-100"} />
+      <span>{label}</span>
+    </NavLink>
+  ));
+}
 
 export default function MainLayout({ children }) {
   const { user, logout } = useAuth();
@@ -52,22 +81,7 @@ export default function MainLayout({ children }) {
         </div>
 
         <nav className="flex flex-col gap-1 text-sm">
-          {navItems.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition duration-200 ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-500/24 to-blue-500/12 text-white shadow-[0_0_30px_rgba(124,58,237,0.18),inset_0_0_0_1px_rgba(168,85,247,0.28)]"
-                    : "text-gray-400 hover:bg-white/6 hover:text-white"
-                }`
-              }
-            >
-              <Icon size={17} className="text-purple-200/80 transition group-hover:text-purple-100" />
-              {label}
-            </NavLink>
-          ))}
+          <NavigationItems />
         </nav>
 
         <div className="mt-auto space-y-3">
@@ -96,12 +110,18 @@ export default function MainLayout({ children }) {
             </div>
           )}
           <div className="rounded-2xl border border-purple-400/20 bg-purple-500/10 p-3 text-xs text-gray-400">
-            ELAN © 2026 · premium study OS
+            ELAN 2026 - premium study OS
           </div>
         </div>
       </aside>
 
-      <main className="relative z-10 flex-1 overflow-auto p-5 md:p-7">{children}</main>
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#090912]/95 px-3 py-2 backdrop-blur-xl md:hidden">
+        <nav className="flex gap-1 overflow-x-auto">
+          <NavigationItems compact />
+        </nav>
+      </div>
+
+      <main className="relative z-10 flex-1 overflow-auto p-5 pb-28 md:p-7">{children}</main>
     </div>
   );
 }

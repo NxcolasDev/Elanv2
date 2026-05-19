@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Layers, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Edit3, Layers, Plus, RotateCcw, Trash2 } from "lucide-react";
 import MainLayout from "../layouts/MainLayout";
 import {
   createFlashcardCard,
@@ -8,6 +8,7 @@ import {
   deleteFlashcardDeck,
   getFlashcardDecks,
   reviewFlashcard,
+  saveFlashcardDecks,
 } from "../services/flashcardsStorage";
 
 export default function Flashcards() {
@@ -22,6 +23,7 @@ export default function Flashcards() {
   const [back, setBack] = useState("");
   const [flipped, setFlipped] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [editingCard, setEditingCard] = useState(null);
 
   const activeDeck = useMemo(
     () => decks.find((deck) => deck.id === activeDeckId) || decks[0],
@@ -34,13 +36,23 @@ export default function Flashcards() {
       ? activeDeck.cards
       : []
   ).filter((card) => {
-    if (!card.dueAt) return true;
+    const nextReviewDate = card.nextReviewDate || card.dueAt;
+    if (!nextReviewDate) return true;
 
-    return new Date(card.dueAt) <= new Date();
+    return new Date(nextReviewDate) <= new Date();
   });
 
   const currentCard =
     cards[reviewIndex % Math.max(cards.length, 1)];
+
+  const allCards = Array.isArray(activeDeck?.cards) ? activeDeck.cards : [];
+
+  const getDifficultyState = (card) => {
+    if (Number(card.repetitions || 0) === 0) return "Novo";
+    if (Number(card.easeFactor || 2.5) < 2.2) return "Hard";
+    if (Number(card.easeFactor || 2.5) > 2.65) return "Easy";
+    return "Good";
+  };
 
   // 🔥 CRIAR DECK
   const handleCreateDeck = () => {
@@ -50,7 +62,7 @@ export default function Flashcards() {
 
     setDecks(nextDecks);
 
-    setActiveDeckId(deckName.trim());
+    setActiveDeckId(nextDecks[0]?.id || "");
 
     setDeckName("");
   };
@@ -116,11 +128,44 @@ export default function Flashcards() {
     setReviewIndex(0);
   };
 
-  useEffect(() => {
-    if (!activeDeckId && decks.length > 0) {
-      setActiveDeckId(decks[0].id);
-    }
-  }, [decks, activeDeckId]);
+  const handleDeleteSpecificCard = (cardId) => {
+    if (!activeDeck?.id) return;
+
+    const nextDecks = deleteFlashcardCard(activeDeck.id, cardId);
+    setDecks(nextDecks);
+    setReviewIndex(0);
+  };
+
+  const handleReviewSpecificCard = (cardId, quality = "good") => {
+    if (!activeDeck?.id) return;
+
+    setDecks(reviewFlashcard(activeDeck.id, cardId, quality));
+  };
+
+  const saveEditedCard = () => {
+    if (!activeDeck?.id || !editingCard?.id) return;
+
+    const nextDecks = decks.map((deck) => {
+      if (deck.id !== activeDeck.id) return deck;
+
+      return {
+        ...deck,
+        cards: (Array.isArray(deck.cards) ? deck.cards : []).map((card) =>
+          card.id === editingCard.id
+            ? {
+                ...card,
+                front: editingCard.front,
+                back: editingCard.back,
+                context: editingCard.context || "",
+              }
+            : card
+        ),
+      };
+    });
+
+    setDecks(saveFlashcardDecks(nextDecks));
+    setEditingCard(null);
+  };
 
   return (
     <MainLayout>
@@ -308,18 +353,7 @@ export default function Flashcards() {
                   </button>
 
                   {/* BOTÕES REVIEW */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-
-                    <button
-                      onClick={() => handleReview("again")}
-                      className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100 transition hover:bg-red-500/20"
-                    >
-                      Novamente
-
-                      <div className="text-xs opacity-70">
-                        1 min
-                      </div>
-                    </button>
+                  <div className="mt-4 grid gap-2 md:grid-cols-3">
 
                     <button
                       onClick={() => handleReview("hard")}
@@ -328,7 +362,7 @@ export default function Flashcards() {
                       Difícil
 
                       <div className="text-xs opacity-70">
-                        5 min
+                        volta mais rapido
                       </div>
                     </button>
 
@@ -339,7 +373,7 @@ export default function Flashcards() {
                       Bom
 
                       <div className="text-xs opacity-70">
-                        10 min
+                        intervalo normal
                       </div>
                     </button>
 
@@ -350,7 +384,7 @@ export default function Flashcards() {
                       Fácil
 
                       <div className="text-xs opacity-70">
-                        5 dias
+                        aparece menos
                       </div>
                     </button>
 
@@ -384,8 +418,119 @@ export default function Flashcards() {
               )}
 
             </div>
+
+            <div className="elan-glass rounded-3xl p-5">
+              <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">Conteudo do deck</p>
+                  <h2 className="text-xl font-bold">{activeDeck?.name || "Sem deck"}</h2>
+                </div>
+                <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-gray-300">
+                  {allCards.length} cards totais
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {allCards.length === 0 ? (
+                  <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-400">
+                    Este deck ainda nao tem cards.
+                  </p>
+                ) : (
+                  allCards.map((card) => (
+                    <div key={card.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto] lg:items-start">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-purple-200">Frente</p>
+                          <p className="mt-1 text-sm text-gray-100">{card.front}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-purple-200">Verso</p>
+                          <p className="mt-1 text-sm text-gray-300">{card.back}</p>
+                          {card.context && <p className="mt-2 text-xs text-gray-500">{card.context}</p>}
+                        </div>
+                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                          <button
+                            type="button"
+                            onClick={() => setEditingCard(card)}
+                            className="rounded-xl border border-white/10 bg-white/5 p-2 text-gray-200 transition hover:bg-white/10"
+                            aria-label="Editar card"
+                          >
+                            <Edit3 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReviewSpecificCard(card.id, "good")}
+                            className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100 transition hover:bg-emerald-500/20"
+                          >
+                            Revisar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSpecificCard(card.id)}
+                            className="rounded-xl border border-red-400/30 bg-red-500/10 p-2 text-red-100 transition hover:bg-red-500/20"
+                            aria-label="Deletar card"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-400">
+                        <span className="rounded-full bg-white/8 px-2 py-1">{getDifficultyState(card)}</span>
+                        <span className="rounded-full bg-white/8 px-2 py-1">
+                          Proxima revisao: {new Date(card.nextReviewDate || card.dueAt).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </section>
+
+        {editingCard && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-4 backdrop-blur-sm md:items-center">
+            <section className="elan-glass w-full max-w-xl rounded-[2rem] p-5">
+              <h2 className="text-xl font-black">Editar flashcard</h2>
+              <div className="mt-5 space-y-3">
+                <input
+                  value={editingCard.front}
+                  onChange={(event) => setEditingCard({ ...editingCard, front: event.target.value })}
+                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-purple-400"
+                  placeholder="Frente"
+                />
+                <textarea
+                  value={editingCard.back}
+                  onChange={(event) => setEditingCard({ ...editingCard, back: event.target.value })}
+                  className="h-32 w-full resize-none rounded-2xl border border-white/10 bg-black/30 p-4 text-sm outline-none focus:border-purple-400"
+                  placeholder="Verso"
+                />
+                <input
+                  value={editingCard.context || ""}
+                  onChange={(event) => setEditingCard({ ...editingCard, context: event.target.value })}
+                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-purple-400"
+                  placeholder="Contexto opcional"
+                />
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCard(null)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-gray-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={saveEditedCard}
+                  className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white"
+                >
+                  Salvar
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

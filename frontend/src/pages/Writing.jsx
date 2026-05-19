@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import ExamSwitcher from "../components/ExamSwitcher";
 import MainLayout from "../layouts/MainLayout";
 import { writingContent } from "../data/examContent";
@@ -25,8 +24,7 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-
-const API = "http://localhost:5000/api/exams/generate";
+import { api } from "../services/api";
 
 const chartExamples = [
   {
@@ -82,7 +80,7 @@ export default function Writing() {
   const [correction, setCorrection] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [timerEnabled, setTimerEnabled] = useState(true);
+  const [timerEnabled] = useState(true);
   const [timeLeft, setTimeLeft] = useState(40 * 60);
   const [chartIndex, setChartIndex] = useState(0);
 
@@ -114,7 +112,7 @@ export default function Writing() {
         return;
       }
 
-      const response = await axios.post(API, {
+      const response = await api.post("/api/exams/generate", {
         mode: "topics",
       });
 
@@ -137,7 +135,7 @@ export default function Writing() {
     setLoading(true);
 
     try {
-      const response = await axios.post(API, {
+      const response = await api.post("/api/exams/generate", {
         mode: "correction",
         text: `
 ${activeExamMeta.label}
@@ -185,7 +183,11 @@ Return ONLY valid JSON:
   };
 
   useEffect(() => {
-    loadTopics();
+    const timeoutId = window.setTimeout(() => {
+      loadTopics();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadTopics]);
 
   useEffect(() => {
@@ -193,7 +195,11 @@ Return ONLY valid JSON:
       ? 20 * 60
       : 40 * 60;
 
-    setTimeLeft(duration);
+    const timeoutId = window.setTimeout(() => {
+      setTimeLeft(duration);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [task]);
 
   useEffect(() => {

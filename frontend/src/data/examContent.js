@@ -67,30 +67,283 @@ export const readingContent = {
 };
 
 export const listeningContent = {
-  IELTS: {
-    title: "IELTS Listening",
-    duration: 30,
-    lang: "en-US",
-    sections: [
-      {
-        title: "Section 1",
-        script:
-          "Good morning. I would like to book a place on the weekend photography course. It starts at nine thirty on Saturday. Students should bring a notebook, a water bottle and a digital camera.",
-        seed: [
-          ["What course is being booked?", ["A. Painting", "B. Photography", "C. Cooking", "D. History"], "B. Photography"],
-          ["What time does it start?", ["A. 8:30", "B. 9:00", "C. 9:30", "D. 10:30"], "C. 9:30"],
+ IELTS: {
+  duration: 30,
+  title: "IELTS Listening Mock Test",
+  lang: "en-US",
+
+  sections: [
+    {
+      title: "Section 1 - Transport Information",
+
+      script: `
+Good morning everyone.
+
+This is an announcement for passengers traveling to Cambridge this morning.
+
+The 8:45 train has been delayed because of technical issues and will now leave at 9:10 from platform 4.
+
+Passengers are reminded to keep their tickets ready before boarding the train.
+
+Large luggage should be placed near the rear doors.
+
+Please note that food and drinks are not allowed in silent areas.
+
+If you require assistance, please speak to a member of staff wearing a yellow jacket.
+
+Thank you for your patience and we apologize for the inconvenience.
+      `,
+
+      seed: [
+        [
+          "What time will the train depart?",
+          ["8:45", "9:10", "9:30", "10:00"],
+          "9:10"
         ],
-      },
-      {
-        title: "Section 2",
-        script:
-          "The museum tour begins in the main hall and lasts about forty minutes. The cafe is closed today, but the bookshop remains open until five o'clock.",
-        seed: [
-          ["Where does the tour begin?", ["A. Cafe", "B. Main hall", "C. Bookshop", "D. Garden"], "B. Main hall"],
-          ["Which place is closed?", ["A. Cafe", "B. Main hall", "C. Bookshop", "D. Ticket office"], "A. Cafe"],
+        [
+          "Which platform should passengers go to?",
+          ["1", "2", "3", "4"],
+          "4"
         ],
-      },
-    ],
+        [
+          "Who can passengers ask for help?",
+          [
+            "Police officers",
+            "Train drivers",
+            "Staff wearing yellow jackets",
+            "Ticket inspectors"
+          ],
+          "Staff wearing yellow jackets"
+        ],
+        [
+          "Where should large luggage be placed?",
+          [
+            "Front doors",
+            "Rear doors",
+            "Middle carriage",
+            "Under seats"
+          ],
+          "Rear doors"
+        ],
+        [
+          "What is not allowed in silent areas?",
+          [
+            "Phones",
+            "Food and drinks",
+            "Children",
+            "Music"
+          ],
+          "Food and drinks"
+        ]
+      ]
+    },
+
+    {
+      title: "Section 2 - University Orientation",
+
+      script: `
+Welcome to Greenhill University.
+
+Today we will provide information about the campus facilities available for new students.
+
+The library opens daily from 7 a.m. until midnight.
+
+Students can access free tutoring sessions every Wednesday afternoon in Building C.
+
+The cafeteria serves breakfast, lunch, and dinner at affordable prices.
+
+International students may also request language support classes during the semester.
+
+Sports facilities include a swimming pool, basketball courts, and a modern fitness center.
+
+Thank you and enjoy your first week at university.
+      `,
+
+      seed: [
+        [
+          "What time does the library close?",
+          ["10 p.m.", "11 p.m.", "Midnight", "1 a.m."],
+          "Midnight"
+        ],
+        [
+          "Where are tutoring sessions located?",
+          ["Building A", "Building B", "Building C", "Building D"],
+          "Building C"
+        ],
+        [
+          "When are tutoring sessions available?",
+          [
+            "Monday morning",
+            "Wednesday afternoon",
+            "Friday evening",
+            "Saturday morning"
+          ],
+          "Wednesday afternoon"
+        ],
+        [
+          "Who can request language support?",
+          [
+            "Teachers",
+            "Local students",
+            "International students",
+            "Visitors"
+          ],
+          "International students"
+        ],
+        [
+          "Which sports facility is mentioned?",
+          [
+            "Football field",
+            "Tennis court",
+            "Swimming pool",
+            "Ice rink"
+          ],
+          "Swimming pool"
+        ]
+      ]
+    },
+
+    {
+      title: "Section 3 - Student Discussion",
+
+      script: `
+Anna and James are discussing their science project.
+
+Anna believes climate change is the most important environmental issue today.
+
+James agrees but thinks pollution in large cities should also receive more attention.
+
+Their presentation will focus on renewable energy and recycling systems.
+
+The students plan to interview local residents next Friday afternoon.
+
+Their professor requested at least three academic sources for the project.
+
+The final presentation will happen at the end of the month.
+      `,
+
+      seed: [
+        [
+          "What topic are the students discussing?",
+          [
+            "History project",
+            "Science project",
+            "Business project",
+            "Math project"
+          ],
+          "Science project"
+        ],
+        [
+          "What issue does Anna consider most important?",
+          [
+            "Traffic",
+            "Poverty",
+            "Climate change",
+            "Education"
+          ],
+          "Climate change"
+        ],
+        [
+          "What does James think deserves more attention?",
+          [
+            "Healthcare",
+            "Pollution",
+            "Technology",
+            "Housing"
+          ],
+          "Pollution"
+        ],
+        [
+          "When will they interview residents?",
+          [
+            "Monday morning",
+            "Tuesday evening",
+            "Friday afternoon",
+            "Saturday afternoon"
+          ],
+          "Friday afternoon"
+        ],
+        [
+          "How many academic sources are required?",
+          ["1", "2", "3", "5"],
+          "3"
+        ]
+      ]
+    },
+
+    {
+      title: "Section 4 - Environmental Lecture",
+
+      script: `
+Today’s lecture focuses on the effects of plastic pollution in the oceans.
+
+Every year, millions of tons of plastic waste enter marine environments.
+
+This pollution affects fish, sea birds, and many other species.
+
+Researchers are currently studying alternative materials that decompose more quickly.
+
+Governments around the world are introducing policies to reduce single-use plastics.
+
+Experts believe education is one of the most effective tools to change consumer behavior.
+
+Individuals can also help by recycling properly and reducing unnecessary waste.
+      `,
+
+      seed: [
+        [
+          "What is the lecture about?",
+          [
+            "Forest fires",
+            "Ocean pollution",
+            "Space travel",
+            "Urban transport"
+          ],
+          "Ocean pollution"
+        ],
+        [
+          "What enters marine environments every year?",
+          [
+            "Oil",
+            "Chemicals",
+            "Plastic waste",
+            "Glass"
+          ],
+          "Plastic waste"
+        ],
+        [
+          "What are researchers studying?",
+          [
+            "New vehicles",
+            "Alternative materials",
+            "Animal behavior",
+            "Weather systems"
+          ],
+          "Alternative materials"
+        ],
+        [
+          "What are governments reducing?",
+          [
+            "Taxes",
+            "Imports",
+            "Single-use plastics",
+            "Factories"
+          ],
+          "Single-use plastics"
+        ],
+        [
+          "What can individuals do?",
+          [
+            "Travel more",
+            "Buy more products",
+            "Recycle properly",
+            "Use more plastic"
+          ],
+          "Recycle properly"
+        ]
+      ]
+    }
+  ]
   },
   DELF: {
     title: "DELF/DALF Compréhension orale",

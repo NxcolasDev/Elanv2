@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import axios from "axios";
 import { auth, provider } from "../services/firebase";
+import { api } from "../services/api";
 import { AuthContext } from "./authContext";
 import { setActiveStorageUser } from "../utils/storageScope";
 
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     const firebaseUser = result.user;
 
     try {
-      await axios.post("http://localhost:5000/api/users/sync", {
+      await api.post("/api/users/sync", {
         firebaseUid: firebaseUser.uid,
         name: firebaseUser.displayName,
         email: firebaseUser.email,

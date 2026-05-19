@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import ExamSwitcher from "../components/ExamSwitcher";
 import MainLayout from "../layouts/MainLayout";
 import SpeakingControls from "../components/speaking/SpeakingControls";
@@ -10,8 +9,7 @@ import { speakingBanks } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 import { saveExamResult } from "../utils/examHistory";
-
-const API = "http://localhost:5000/api/exams/generate";
+import { api } from "../services/api";
 
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -95,7 +93,7 @@ export default function Speaking() {
     setEvaluating(true);
 
     try {
-      const response = await axios.post(API, {
+      const response = await api.post("/api/exams/generate", {
         mode: "speaking",
         text: `${activeExamMeta.label} ${isDelf ? "French DELF/DALF" : "IELTS English"} speaking answer:\n${fullText}`,
       });
