@@ -144,7 +144,7 @@ docker-compose.yml
 ## Clone repository
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/NxcolasDev/Elanv2
 ```
 
 ---
