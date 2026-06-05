@@ -67,7 +67,7 @@ const backend = spawn("node", ["backend/src/server.js"], {
   env: {
     ...process.env,
     PORT: "5000",
-    MONGO_URI: "mongodb://localhost:27017/elan",
+    MONGO_URI: process.env.MONGO_URI,
   },
 });
 ```

@@ -1,8 +1,25 @@
+# Dependencies
 node_modules/
+**/node_modules/
+
+# Build output
 dist/
 build/
+**/dist/
+**/build/
+
+# Local environment files
 .env
+**/.env
 .env.local
+**/.env.local
 .env.*.local
+**/.env.*.local
+
+# Keep templates committed
+!.env.example
+!**/.env.example
+
+# Logs and local-only files
 npm-debug.log*
 Dockerfile.local

@@ -220,7 +220,7 @@ Only after confirmation does the page call the existing `createFlashcardCard` he
 - API base URL is centralized and configurable through `.env`.
 - Example environment files were added for frontend and backend.
 - Backend CORS now uses `CORS_ORIGIN` while preserving local Vite development.
-- Backend database connection has a local MongoDB fallback.
+- Backend database connection reads `MONGO_URI` from the local environment.
 - Backend error handling middleware now returns consistent JSON errors.
 - Backend AI modes were extended without creating a separate AI architecture.
 - Backend debug route logging was removed from app startup.
