@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { BookMarked, CheckCircle2, Copy, Loader2, Mic, PenLine, Sparkles } from "lucide-react";
 import AIStudyAssistant from "../components/AIStudyAssistant";
+import AiUnavailableNotice from "../components/AiUnavailableNotice";
 import MainLayout from "../layouts/MainLayout";
 import {
   highBandStrategies,
@@ -13,6 +14,7 @@ import {
 } from "../data/modelsContent";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { generateStudyModel } from "../services/studyAssistant";
+import { isAiUnavailableError } from "../services/api";
 
 const fallbackInsights = {
   whyUseThis: "This structure is useful because it gives your answer a clear job: answer, explain, support, and close.",
@@ -83,8 +85,12 @@ export default function Models() {
           [activeSection.id]: nextModel,
         });
       }
-    } catch {
-      setModelError("AI model generation is unavailable right now. You can keep studying with the local examples.");
+    } catch (error) {
+      setModelError(
+        isAiUnavailableError(error)
+          ? "AI_UNAVAILABLE"
+          : "AI model generation is unavailable right now. You can keep studying with the local examples."
+      );
     } finally {
       setLoadingModel(false);
     }
@@ -207,11 +213,13 @@ export default function Models() {
                 </div>
               )}
 
-              {modelError && (
+              {modelError === "AI_UNAVAILABLE" ? (
+                <AiUnavailableNotice className="mt-4" />
+              ) : modelError ? (
                 <p className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
                   {modelError}
                 </p>
-              )}
+              ) : null}
             </section>
 
             {activeCategory === "writing" && (

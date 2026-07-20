@@ -5,9 +5,14 @@ import {
   Sparkles,
   BarChart3,
 } from "lucide-react";
+import AiUnavailableNotice from "../AiUnavailableNotice";
 
 export default function SpeakingResult({ result }) {
   if (!result) return null;
+
+  if (result.aiUnavailable) {
+    return <AiUnavailableNotice />;
+  }
 
   if (result.error) {
     return (

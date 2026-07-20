@@ -9,7 +9,7 @@ import { speakingBanks } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 import { saveExamResult } from "../utils/examHistory";
-import { api } from "../services/api";
+import { api, isAiUnavailableError } from "../services/api";
 
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -112,7 +112,11 @@ export default function Speaking() {
       }
     } catch (err) {
       console.error("Erro ao avaliar speaking:", err);
-      setResult({ error: "Erro ao avaliar. Tente novamente em instantes." });
+      setResult(
+        isAiUnavailableError(err)
+          ? { aiUnavailable: true }
+          : { error: "Erro ao avaliar. Tente novamente em instantes." }
+      );
     } finally {
       setEvaluating(false);
     }

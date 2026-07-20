@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BookOpen, CheckCircle2, Loader2, RotateCcw } from "lucide-react";
 import ExamSwitcher from "../components/ExamSwitcher";
+import AiUnavailableNotice from "../components/AiUnavailableNotice";
 import MainLayout from "../layouts/MainLayout";
 import { expandQuestions, readingContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { saveExamResult } from "../utils/examHistory";
 import { toIELTSBand } from "../utils/scoring";
-import { api } from "../services/api";
+import { api, isAiUnavailableError } from "../services/api";
 
 function normalizeQuestion(question, index) {
   if (!question || typeof question !== "object") return null;
@@ -59,6 +60,7 @@ export default function Reading() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [aiUnavailable, setAiUnavailable] = useState(false);
   const [timeLeft, setTimeLeft] = useState(localContent.duration * 60);
 
   const questions = useMemo(
@@ -69,6 +71,7 @@ export default function Reading() {
   const generateExam = useCallback(async () => {
     setLoading(true);
     setError("");
+    setAiUnavailable(false);
     setResult(null);
     setAnswers({});
 
@@ -83,6 +86,10 @@ export default function Reading() {
     } catch (err) {
       console.error("Erro ao gerar prova:", err);
       setExam(localExam);
+      if (isAiUnavailableError(err)) {
+        setAiUnavailable(true);
+        return;
+      }
       setError(
         isDelf
           ? "Mode DELF/DALF actif avec banque locale en français."
@@ -193,6 +200,8 @@ export default function Reading() {
             {error}
           </div>
         )}
+
+        {aiUnavailable && <AiUnavailableNotice />}
 
         {!exam && !loading ? (
           <div className="elan-glass rounded-3xl p-6 text-gray-300">

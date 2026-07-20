@@ -1,5 +1,9 @@
 const { getRandomTopics } = require("../utils/examGenerator");
-const { generateText } = require("../services/aiProvider");
+const {
+  AI_DEMO_UNAVAILABLE_MESSAGE,
+  AiProviderUnavailableError,
+  generateText,
+} = require("../services/aiProvider");
 
 function cleanAiJson(value) {
   return String(value || "")
@@ -306,6 +310,15 @@ Return ONLY valid JSON:
     });
 
   } catch (error) {
+    if (error instanceof AiProviderUnavailableError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code,
+        aiUnavailable: true,
+        message: AI_DEMO_UNAVAILABLE_MESSAGE,
+      });
+    }
+
     console.error("🔥 ERRO GERAL:", error);
 
     return res.status(500).json({

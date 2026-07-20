@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Loader2, MessageCircle, Save, Send, X } from "lucide-react";
+import AiUnavailableNotice from "./AiUnavailableNotice";
 import lumi from "../assets/lumi.png";
 import { askStudyAssistant } from "../services/studyAssistant";
 import { createStudyNote } from "../services/notesStorage";
+import { AI_UNAVAILABLE_MESSAGE, isAiUnavailableError } from "../services/api";
 
 const quickPrompts = [
   "Por que isso e util?",
@@ -39,12 +41,15 @@ export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF
       });
 
       setMessages((current) => [...current, { role: "assistant", content: answer }]);
-    } catch {
+    } catch (error) {
       setMessages((current) => [
         ...current,
         {
           role: "assistant",
-          content: "I could not reach the AI service right now. Try again when the backend and AI key are available.",
+          aiUnavailable: isAiUnavailableError(error),
+          content: isAiUnavailableError(error)
+            ? AI_UNAVAILABLE_MESSAGE
+            : "Nao consegui acessar o servico de IA agora. Tente novamente quando o backend estiver disponivel.",
         },
       ]);
     } finally {
@@ -118,8 +123,12 @@ export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF
                       : "mr-auto max-w-[92%] border-white/10 bg-black/25 text-gray-200"
                   }`}
                 >
-                  {message.content}
-                  {message.role === "assistant" && index > 0 && (
+                  {message.aiUnavailable ? (
+                    <AiUnavailableNotice compact className="border-0 bg-transparent p-0 shadow-none" />
+                  ) : (
+                    message.content
+                  )}
+                  {message.role === "assistant" && index > 0 && !message.aiUnavailable && (
                     <button
                       type="button"
                       onClick={() => saveAssistantNote(message.content)}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ExamSwitcher from "../components/ExamSwitcher";
+import AiUnavailableNotice from "../components/AiUnavailableNotice";
 import MainLayout from "../layouts/MainLayout";
 import { writingContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
@@ -24,7 +25,7 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { api } from "../services/api";
+import { api, isAiUnavailableError } from "../services/api";
 
 const chartExamples = [
   {
@@ -78,6 +79,7 @@ export default function Writing() {
   const [topics, setTopics] = useState([]);
   const [text, setText] = useState("");
   const [correction, setCorrection] = useState(null);
+  const [aiUnavailable, setAiUnavailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [timerEnabled] = useState(true);
@@ -133,6 +135,7 @@ export default function Writing() {
     if (!text.trim()) return;
 
     setLoading(true);
+    setAiUnavailable(false);
 
     try {
       const response = await api.post("/api/exams/generate", {
@@ -177,6 +180,10 @@ Return ONLY valid JSON:
       }
     } catch (err) {
       console.error(err);
+      if (isAiUnavailableError(err)) {
+        setCorrection(null);
+        setAiUnavailable(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -418,6 +425,7 @@ Return ONLY valid JSON:
                 onClick={() => {
                   setText("");
                   setCorrection(null);
+                  setAiUnavailable(false);
                 }}
                 className="rounded-xl border border-white/10 px-5 py-3 text-sm hover:bg-white/10"
               >
@@ -436,6 +444,8 @@ Return ONLY valid JSON:
             </div>
           </div>
         </section>
+
+        {aiUnavailable && <AiUnavailableNotice />}
 
         {correction && (
           <section className="elan-glass rounded-3xl p-6">

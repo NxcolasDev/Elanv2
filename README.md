@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-AI-powered language learning platform focused on IELTS and DELF/DALF preparation.
+  Plataforma full stack de aprendizado de idiomas para IELTS e DELF/DALF, com estudos guiados, simulados, flashcards e recursos opcionais de Inteligencia Artificial.
 </p>
 
 <p align="center">
@@ -17,113 +17,73 @@ AI-powered language learning platform focused on IELTS and DELF/DALF preparation
   <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss" />
 </p>
 
-## Overview
+## Sobre o projeto
 
-ELAN is a full-stack language learning platform designed to centralize advanced study tools for international language exams.
+ELAN e uma plataforma criada para portfolio, focada em centralizar ferramentas de estudo para exames internacionais de idiomas.
 
-The platform combines AI-assisted learning, flashcards, writing practice, speaking preparation, reading and listening exercises, full exam simulations, YouTube study workflows, and vocabulary analysis.
+O projeto inclui treino de reading, listening, writing, speaking, modelos de resposta, flashcards, historico de desempenho, estudos com YouTube e a assistente Lumi. As chamadas de IA passam sempre pelo backend para que chaves privadas nunca sejam expostas no navegador.
 
-The browser never calls the AI provider directly. All AI requests go through the backend so provider keys stay out of frontend code.
+## Funcionalidades
 
-## Features
+- Preparacao IELTS e DELF/DALF.
+- Simulados e treinos por habilidade.
+- Correcao de writing e speaking com IA, quando configurada.
+- Assistente de estudos Lumi.
+- Geracao opcional de modelos e provas de reading via IA.
+- Flashcards e anotacoes de estudo.
+- Autenticacao com Firebase.
+- Persistencia com MongoDB.
 
-## IELTS & DELF Preparation
+## Limitacoes da demonstracao publica
 
-- Reading practice
-- Listening exercises
-- Writing generation
-- Speaking prompts
-- Full mock simulations
-- Study models and structures
+As funcionalidades de Inteligência Artificial dependem de uma chave de API própria. Por questões de segurança e custo, elas não estão disponíveis na demonstração pública. Consulte o README para saber como configurar.
 
-## AI Features
+Quando `AI_API_KEY` nao estiver configurada, o backend responde de forma controlada e a interface mostra uma mensagem amigavel. O restante da aplicacao continua funcionando.
 
-- AI-assisted explanations
-- Vocabulary guidance
-- Writing feedback
-- Study assistant, Lumi
-- OpenAI-compatible Groq provider through the backend
+## Tecnologias
 
-## Flashcard System
-
-- Deck organization
-- Spaced repetition structure
-- Add cards directly from study sessions
-- Persistent local storage
-
-## YouTube Study Mode
-
-- Embedded study videos
-- Study notes
-- Flashcard integration
-- AI contextual assistant
-
-## News Study Mode
-
-- BBC integration
-- TV5MONDE integration
-- Vocabulary-focused workflow
-
-## Screenshots
-
-## Dashboard
-
-![Dashboard](./Assets/Dashboard.png)
-
-## Flashcards
-
-![Flashcards](./Assets/flashcards.png)
-
-## Models
-
-![Models](./Assets/Models.png)
-
-## YouTube Study
-
-![YouTube Study](./Assets/Youtube.png)
-
-## Full Simulation
-
-![Simulation](./Assets/Simulation.png)
-
-## Tech Stack
-
-## Frontend
+Frontend:
 
 - React
 - Vite
 - Tailwind CSS
 - React Router
 - Firebase Auth
+- Recharts
+- Axios
 
-## Backend
+Backend:
 
 - Node.js
 - Express
 - MongoDB
 - Mongoose
+- Firebase Admin SDK
 - Axios
 - dotenv
+- Groq com endpoint OpenAI-compatible
 
-## Project Structure
+## Estrutura
 
 ```text
-backend/     Express API, MongoDB models, AI provider, auth middleware
-frontend/    React app, study pages, Firebase client config
-docs/        Technical notes and future Electron preparation
-Assets/      README images and project screenshots
+.
+├── backend/       API Express, modelos MongoDB, rotas e provider de IA
+├── frontend/      Aplicacao React, paginas, componentes e servicos HTTP
+├── docs/          Documentacao tecnica complementar
+├── Assets/        Imagens usadas no README
+└── docker-compose.yml
 ```
 
-## Installation
+## Instalacao local
 
-Clone the repository:
+Clone o repositorio:
 
 ```bash
 git clone https://github.com/NxcolasDev/Elanv2
 cd Elanv2
 ```
 
-Install dependencies:
+Instale as dependencias:
 
 ```bash
 cd backend
@@ -133,98 +93,142 @@ cd ../frontend
 npm install
 ```
 
-## Environment Setup
+Suba um MongoDB local, se nao for usar MongoDB Atlas:
 
-Copy the example files and create your own local `.env` files:
+```bash
+docker compose up -d
+```
+
+## Variaveis de ambiente
+
+Crie arquivos locais a partir dos exemplos:
 
 ```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-Fill `backend/.env` with your own private values:
+Backend (`backend/.env`):
 
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-CORS_ORIGIN=http://localhost:5173
-NODE_ENV=development
-AI_API_KEY=your_groq_api_key
-```
+| Variavel | Obrigatoria | Proposito |
+| --- | --- | --- |
+| `PORT` | Nao | Porta local da API Express. Em deploy, a plataforma geralmente injeta esse valor. |
+| `MONGO_URI` | Sim | String de conexao com MongoDB local ou MongoDB Atlas. |
+| `CORS_ORIGIN` | Sim | Lista de origens do frontend autorizadas a chamar a API. Separe multiplas URLs por virgula. |
+| `NODE_ENV` | Sim | Use `development` localmente e `production` em deploy. |
+| `AI_API_KEY` | Nao | Chave privada da Groq para recursos de IA. Se ficar vazia, a IA e desativada com mensagem amigavel. |
 
-Fill `frontend/.env` with your Firebase web app values:
+Frontend (`frontend/.env`):
 
-```env
-VITE_API_BASE_URL=http://localhost:5000
-VITE_FIREBASE_API_KEY=your_firebase_web_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
-VITE_FIREBASE_APP_ID=your_firebase_app_id
-```
+| Variavel | Obrigatoria | Proposito |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | Sim | URL publica do backend. Localmente: `http://localhost:5000`. |
+| `VITE_FIREBASE_API_KEY` | Sim | Chave publica do app web Firebase. |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Sim | Dominio de autenticacao Firebase. |
+| `VITE_FIREBASE_PROJECT_ID` | Sim | ID do projeto Firebase. |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Sim | Bucket associado ao projeto Firebase. |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sim | Sender ID do Firebase. |
+| `VITE_FIREBASE_APP_ID` | Sim | App ID do Firebase Web App. |
 
-`AI_API_KEY` must be your own Groq API key. Do not reuse a key that was committed or exposed anywhere.
+Importante: valores `VITE_*` ficam publicos no JavaScript do navegador. Nunca coloque segredos de backend no frontend.
 
-## Security Rules
+## Execucao local
 
-Never commit real `.env` files, API keys, database URLs, passwords, tokens, service account files, or private credentials. Only `.env.example` files should be committed.
-
-The backend `.env` is private because it contains `MONGO_URI` and `AI_API_KEY`. The frontend `VITE_*` values are public at runtime because they are bundled into browser JavaScript, so never put backend secrets there.
-
-If a real key was ever pushed to GitHub, rotate or revoke it in the provider dashboard. Removing it from the latest commit is not enough because the old value may still exist in Git history.
-
-## Development
-
-Start MongoDB however you prefer. This repo includes Docker Compose for local database services:
-
-```bash
-docker compose up -d
-```
-
-Start the backend:
+Backend:
 
 ```bash
 cd backend
 npm run dev
 ```
 
-Start the frontend:
+Frontend:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-The frontend expects the backend URL from `VITE_API_BASE_URL`. In local development, keep it pointed at the backend port configured in `backend/.env`.
+Acesse o frontend em `http://localhost:5173`.
 
-## Git Hygiene
+## Build de producao
 
-The repository ignores local environment files, dependency folders, and build output:
-
-- `.env` files stay local.
-- `.env.example` files are committed as safe templates.
-- `node_modules/` is ignored.
-- `dist/` and `build/` are ignored.
-
-Before pushing, check:
+Frontend:
 
 ```bash
-git status
-git diff --cached
+cd frontend
+npm run build
+npm run preview
 ```
 
-## Project Status
+Backend:
 
-ELAN is currently in version 1.0. Core systems are functional and operational, including flashcards, AI study tools, YouTube study mode, IELTS/DELF simulations, and writing and speaking practice.
+```bash
+cd backend
+npm start
+```
 
-## Documentation
+## Deploy recomendado
 
-More details are available in:
+Recomendacao para portfolio:
+
+- Frontend na Vercel.
+- Backend no Render ou Railway.
+- Banco de dados no MongoDB Atlas.
+
+Essa combinacao e simples para projetos full stack separados: a Vercel e excelente para Vite/React, enquanto Render/Railway executam o servidor Express de forma direta com variaveis privadas. MongoDB Atlas evita depender de um banco rodando na mesma maquina do deploy.
+
+Configuracao de deploy:
+
+Frontend:
+
+- Root directory: `frontend`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Variaveis: todas as `VITE_*`
+- `VITE_API_BASE_URL`: URL publica do backend
+
+Backend:
+
+- Root directory: `backend`
+- Build command: `npm install`
+- Start command: `npm start`
+- Variaveis: `MONGO_URI`, `CORS_ORIGIN`, `NODE_ENV=production` e opcionalmente `AI_API_KEY`
+- `CORS_ORIGIN`: URL publica do frontend
+
+## Seguranca
+
+- Nunca commite arquivos `.env`.
+- Nunca commite chaves de API, tokens, senhas ou URLs privadas de banco.
+- Os arquivos `.env.example` usam apenas valores ficticios e podem ser enviados ao GitHub.
+- Se uma chave real for exposta, revogue ou rotacione no painel do provedor. Apagar o commit mais recente nao remove o segredo do historico.
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](./Assets/Dashboard.png)
+
+### Flashcards
+
+![Flashcards](./Assets/flashcards.png)
+
+### Models
+
+![Models](./Assets/Models.png)
+
+### YouTube Study
+
+![YouTube Study](./Assets/Youtube.png)
+
+### Full Simulation
+
+![Simulation](./Assets/Simulation.png)
+
+## Documentacao complementar
 
 - `docs/TECHNICAL_DOCUMENTATION.md`
 - `docs/ELECTRON_PREPARATION.md`
 
-## Author
+## Autor
 
 Nicolas Silva

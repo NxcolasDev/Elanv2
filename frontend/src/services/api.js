@@ -12,5 +12,15 @@ export const api = axios.create({
 });
 
 export function getApiErrorMessage(error, fallback = "Something went wrong.") {
-  return error?.response?.data?.error || error?.message || fallback;
+  return error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
 }
+
+export function isAiUnavailableError(error) {
+  return Boolean(
+    error?.response?.data?.aiUnavailable ||
+      error?.response?.data?.code === "AI_PROVIDER_UNAVAILABLE"
+  );
+}
+
+export const AI_UNAVAILABLE_MESSAGE =
+  "As funcionalidades de Inteligência Artificial dependem de uma chave de API própria. Por questões de segurança e custo, elas não estão disponíveis na demonstração pública. Consulte o README para saber como configurar.";
