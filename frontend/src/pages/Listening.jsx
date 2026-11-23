@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Headphones, Play, RotateCcw } from "lucide-react";
 import ExamSwitcher from "../components/ExamSwitcher";
 import MainLayout from "../layouts/MainLayout";
@@ -6,6 +6,8 @@ import { listeningContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { saveExamResult } from "../utils/examHistory";
 import { toIELTSBand } from "../utils/scoring";
+
+import { getPublishedContent } from "../services/api";
 
 const maxPlays = 2;
 
@@ -41,9 +43,29 @@ function formatTime(seconds) {
 }
 
 export default function Listening() {
+  const { activeExam } = useActiveExam();
+  return <ListeningPractice key={activeExam} />;
+}
+
+function ListeningPractice() {
   const { activeExam, exam: activeExamMeta, isDelf } = useActiveExam();
   const content = listeningContent[activeExam] || listeningContent.IELTS;
-  const listeningSections = useMemo(() => buildSections(content), [content]);
+  const [published, setPublished] = useState(null);
+  const [usePublished, setUsePublished] = useState(false);
+  const listeningSections = useMemo(() => {
+    if (!usePublished || !published) return buildSections(content);
+    return published.sections.map((section, index) => ({
+      ...section, id: index + 1,
+      questions: section.questions.map((question) => ({ ...question, answer: question.correct })),
+    }));
+  }, [content, published, usePublished]);
+  useEffect(() => {
+    const controller = new AbortController();
+    getPublishedContent(activeExam, "listening", controller.signal)
+      .then((items) => setPublished(items[0]?.payload || null))
+      .catch(() => {});
+    return () => { controller.abort(); window.speechSynthesis?.cancel(); };
+  }, [activeExam]);
 
   const [started, setStarted] = useState(false);
   const [sectionIndex, setSectionIndex] = useState(0);
@@ -99,18 +121,15 @@ utterance.volume = 1;
     window.speechSynthesis.speak(utterance);
   };
 
+  useEffect(() => {
+    if (!started || result) return;
+    const interval = window.setInterval(() => setTimeLeft((seconds) => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(interval);
+  }, [started, result]);
+
   const startTest = () => {
     setStarted(true);
     setTimeLeft(content.duration * 60);
-    const interval = window.setInterval(() => {
-      setTimeLeft((previous) => {
-        if (previous <= 1) {
-          window.clearInterval(interval);
-          return 0;
-        }
-        return previous - 1;
-      });
-    }, 1000);
   };
 
   const handleAnswer = (questionId, option) => {
@@ -187,6 +206,12 @@ utterance.volume = 1;
 
             <div className="flex flex-wrap items-center gap-3">
               <ExamSwitcher />
+              {published && !started && (
+                <label className="flex items-center gap-2 text-sm text-purple-100">
+                  <input type="checkbox" checked={usePublished} onChange={(event) => setUsePublished(event.target.checked)} />
+                  Usar exercício publicado
+                </label>
+              )}
               <div className="rounded-2xl border border-purple-300/25 bg-purple-500/10 px-4 py-2 text-center">
                 <p className="text-xs text-gray-400">Timer</p>
                 <p className="text-lg font-black text-purple-100">{formatTime(timeLeft)}</p>

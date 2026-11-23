@@ -1,27 +1,58 @@
-version: "3.8"
-
 services:
   mongo:
     image: mongo:6
     container_name: elan-mongo
-    restart: always
+    restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: elan
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:1
     container_name: elan-mongo-ui
-    restart: always
+    restart: unless-stopped
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+
+  backend:
+    profiles: [api]
+    build: ./backend
+    init: true
+    restart: unless-stopped
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      MONGO_URI: mongodb://mongo:27017/elan
+      NODE_ENV: development
+      PORT: 5000
+      GOOGLE_APPLICATION_CREDENTIALS: /run/adc/application_default_credentials.json
+    volumes:
+      - type: bind
+        source: ${ELAN_ADC_FILE:-./backend/application_default_credentials.json}
+        target: /run/adc/application_default_credentials.json
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
 
 volumes:
   mongo_data:

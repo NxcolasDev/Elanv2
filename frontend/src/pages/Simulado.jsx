@@ -87,6 +87,11 @@ function buildExamSections(activeExam) {
 }
 
 export default function Simulado() {
+  const { activeExam } = useActiveExam();
+  return <Simulation key={activeExam} />;
+}
+
+function Simulation() {
   const { activeExam, exam } = useActiveExam();
   const sections = useMemo(() => buildExamSections(activeExam), [activeExam]);
   const [started, setStarted] = useState(false);

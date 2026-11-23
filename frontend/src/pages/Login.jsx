@@ -11,7 +11,7 @@ export default function Login() {
       const user = await loginWithGoogle();
       navigate(`/dashboard?uid=${user.uid}`);
     } catch (err) {
-      console.error("Erro no login Google:", err);
+      console.error("Erro no login Google:", err.code);
     }
   };
 

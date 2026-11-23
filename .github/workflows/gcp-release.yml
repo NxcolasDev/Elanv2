@@ -1,0 +1,51 @@
+name: Release backend to existing Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        options: [staging, prod]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: ${{ vars.ELAN_ENABLE_GCP_DEPLOY == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency: elan-release-${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GCP_PROJECT: ${{ vars.GCP_PROJECT }}
+      GCP_REGION: ${{ vars.GCP_REGION }}
+      CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+      ARTIFACT_REPOSITORY: ${{ vars.ARTIFACT_REPOSITORY }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_RELEASE_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Publish image and update existing service
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${GCP_PROJECT:?}" "${GCP_REGION:?}" "${CLOUD_RUN_SERVICE:?}" "${ARTIFACT_REPOSITORY:?}"
+          registry="${GCP_REGION}-docker.pkg.dev"
+          image="${registry}/${GCP_PROJECT}/${ARTIFACT_REPOSITORY}/backend:${GITHUB_SHA}"
+          gcloud run services describe "$CLOUD_RUN_SERVICE" --project "$GCP_PROJECT" --region "$GCP_REGION" --format='value(name)'
+          gcloud auth configure-docker "$registry" --quiet
+          docker build --platform linux/amd64 --tag "$image" backend
+          docker push "$image"
+          digest="$(docker inspect --format '{{index .RepoDigests 0}}' "$image")"
+          [[ "$digest" =~ @sha256:[a-f0-9]{64}$ ]]
+          gcloud run services update "$CLOUD_RUN_SERVICE" --image "$digest" --project "$GCP_PROJECT" --region "$GCP_REGION" --quiet
+          url="$(gcloud run services describe "$CLOUD_RUN_SERVICE" --project "$GCP_PROJECT" --region "$GCP_REGION" --format='value(status.url)')"
+          curl --fail --silent --show-error --max-time 40 "$url/api/ready"

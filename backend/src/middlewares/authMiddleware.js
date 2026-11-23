@@ -1,21 +1,22 @@
-const admin = require("../config/firebase");
+const firebaseAuth = require("../config/firebase");
 
-const authMiddleware = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization;
-
-    if (!token) {
-      return res.status(401).json({ message: "Sem token" });
+function authenticate({ checkRevoked = false } = {}) {
+  return async (req, res, next) => {
+    const authorization = req.get("authorization");
+    try {
+      const token = authorization?.replace(/^Bearer\s+/i, "");
+      if (!token) return res.status(401).json({ message: "Autenticação necessária." });
+      req.user = await firebaseAuth.verifyIdToken(token, checkRevoked);
+    } catch {
+      return res.status(401).json({ message: "Sessão inválida." });
     }
+    return next();
+  };
+}
 
-    const decoded = await admin.auth().verifyIdToken(token);
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") return res.status(403).json({ message: "Acesso administrativo necessário." });
+  return next();
+}
 
-    req.user = decoded;
-
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Token inválido" });
-  }
-};
-
-module.exports = authMiddleware;
+module.exports = { authenticate, requireAdmin };

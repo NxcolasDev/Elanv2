@@ -1,100 +1,47 @@
+const { isObjectIdOrHexString } = require("mongoose");
 const Flashcard = require("../models/Flashcard");
 
-const getFlashcards = async (req, res) => {
-  try {
-    const { userId } = req.params;
+const notFound = (res) => res.status(404).json({ error: "Flashcard não encontrado." });
 
-    const flashcards = await Flashcard.find({ userId });
+async function getFlashcards(req, res) {
+  if (req.params.userId !== req.user.uid) return res.status(403).json({ error: "Acesso negado." });
+  return res.json(await Flashcard.find({ userId: req.user.uid }));
+}
 
-    res.json(flashcards);
-  } catch (error) {
-    res.status(500).json({
-      error: "Erro ao buscar flashcards",
-    });
+async function createFlashcard(req, res) {
+  const { userId, deckName, front, back } = req.body || {};
+  if (userId !== undefined && userId !== req.user.uid) {
+    return res.status(403).json({ error: "Acesso negado." });
   }
-};
-
-const createFlashcard = async (req, res) => {
-  try {
-    const {
-      userId,
-      deckName,
-      front,
-      back,
-    } = req.body;
-
-    const flashcard = await Flashcard.create({
-      userId,
-      deckName,
-      front,
-      back,
-    });
-
-    res.json(flashcard);
-  } catch (error) {
-    res.status(500).json({
-      error: "Erro ao criar flashcard",
-    });
+  if (![deckName, front, back].every((value) => typeof value === "string" && value.trim() && value.length <= 2000)) {
+    return res.status(400).json({ error: "Informe deck, frente e verso válidos." });
   }
-};
+  return res.json(await Flashcard.create({ userId: req.user.uid, deckName, front, back }));
+}
 
-const deleteFlashcard = async (req, res) => {
-  try {
-    const { id } = req.params;
+async function deleteFlashcard(req, res) {
+  const { id } = req.params;
+  if (!isObjectIdOrHexString(id)) return notFound(res);
+  const result = await Flashcard.deleteOne({ _id: id, userId: req.user.uid });
+  if (!result.deletedCount) return notFound(res);
+  return res.json({ success: true });
+}
 
-    await Flashcard.findByIdAndDelete(id);
-
-    res.json({
-      success: true,
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: "Erro ao deletar flashcard",
-    });
+async function reviewFlashcard(req, res) {
+  const { id } = req.params;
+  const { quality } = req.body || {};
+  if (!isObjectIdOrHexString(id)) return notFound(res);
+  if (!["again", "hard", "good", "easy"].includes(quality)) {
+    return res.status(400).json({ error: "Informe uma avaliação válida." });
   }
-};
+  const again = quality === "again";
+  const interval = again ? 1 : { $min: [36500, { $multiply: [{ $ifNull: ["$interval", 1] }, 2] }] };
+  const flashcard = await Flashcard.findOneAndUpdate({ _id: id, userId: req.user.uid }, [
+    { $set: { interval, repetitions: again ? 0 : { $add: [{ $ifNull: ["$repetitions", 0] }, 1] } } },
+    { $set: { nextReview: { $dateAdd: { startDate: "$$NOW", unit: "day", amount: "$interval" } } } },
+  ], { returnDocument: "after", updatePipeline: true });
+  if (!flashcard) return notFound(res);
+  return res.json(flashcard);
+}
 
-const reviewFlashcard = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { quality } = req.body;
-
-    const flashcard = await Flashcard.findById(id);
-
-    if (!flashcard) {
-      return res.status(404).json({
-        error: "Flashcard não encontrado",
-      });
-    }
-
-    if (quality === "again") {
-      flashcard.repetitions = 0;
-      flashcard.interval = 1;
-    } else {
-      flashcard.repetitions += 1;
-      flashcard.interval *= 2;
-    }
-
-    const nextDate = new Date();
-    nextDate.setDate(
-      nextDate.getDate() + flashcard.interval
-    );
-
-    flashcard.nextReview = nextDate;
-
-    await flashcard.save();
-
-    res.json(flashcard);
-  } catch (error) {
-    res.status(500).json({
-      error: "Erro ao revisar flashcard",
-    });
-  }
-};
-
-module.exports = {
-  getFlashcards,
-  createFlashcard,
-  deleteFlashcard,
-  reviewFlashcard,
-};
+module.exports = { getFlashcards, createFlashcard, deleteFlashcard, reviewFlashcard };

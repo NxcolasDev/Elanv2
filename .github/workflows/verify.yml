@@ -1,0 +1,65 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci --prefix backend
+      - run: npm ci --prefix frontend
+      - run: npm run check --prefix backend
+      - run: npm test --prefix backend
+        env:
+          ELAN_TEST_MONGO_URI: mongodb://127.0.0.1:27017
+      - run: npm run lint --prefix frontend
+      - run: npm test --prefix frontend
+      - run: npm run build --prefix frontend
+      - run: npm audit --prefix backend --omit=dev --audit-level=high
+      - run: npm audit --prefix frontend --omit=dev --audit-level=high
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: docker compose --profile api config --quiet
+      - run: docker build --tag elan-backend:ci ./backend
+      - name: Verify non-root runtime
+        run: docker run --rm --entrypoint node elan-backend:ci -e 'process.exit(process.getuid() === 0 ? 1 : 0)'
+
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stage: [dev, staging, prod]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.13.5'
+      - run: terraform fmt -check -recursive infra/terraform
+      - run: terraform -chdir=infra/terraform/environments/${{ matrix.stage }} init -backend=false -input=false -lockfile=readonly
+      - run: terraform -chdir=infra/terraform/environments/${{ matrix.stage }} validate

@@ -1,10 +1,10 @@
-import { scopedKey } from "./storageScope";
+import { scopedKey } from "./storageScope.js";
 
 const HISTORY_KEY = "elan.examHistory";
 
-export function getExamHistory() {
+export function getExamHistory(userId) {
   try {
-    const value = window.localStorage.getItem(scopedKey(HISTORY_KEY));
+    const value = window.localStorage.getItem(scopedKey(HISTORY_KEY, userId));
     const parsed = value ? JSON.parse(value) : [];
 
     return Array.isArray(parsed) ? parsed : [];
@@ -13,8 +13,8 @@ export function getExamHistory() {
   }
 }
 
-export function saveExamResult(result) {
-  const currentHistory = getExamHistory();
+export function saveExamResult(result, userId) {
+  const currentHistory = getExamHistory(userId);
 
   const nextResult = {
     id: crypto.randomUUID?.() || `${Date.now()}`,
@@ -38,7 +38,7 @@ export function saveExamResult(result) {
 
   try {
     window.localStorage.setItem(
-      scopedKey(HISTORY_KEY),
+      scopedKey(HISTORY_KEY, userId),
       JSON.stringify(nextHistory)
     );
   } catch {

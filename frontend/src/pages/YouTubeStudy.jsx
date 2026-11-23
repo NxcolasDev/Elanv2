@@ -5,6 +5,8 @@ import MainLayout from "../layouts/MainLayout";
 import { createFlashcardCard, getFlashcardDecks } from "../services/flashcardsStorage";
 import { createStudyNote } from "../services/notesStorage";
 import { youtubeCategories } from "../data/youtubeStudyContent";
+import { useAuth } from "../hooks/useAuth";
+import { scopedKey } from "../utils/storageScope";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 function extractYouTubeId(value) {
@@ -36,15 +38,21 @@ function extractYouTubeId(value) {
 }
 
 export default function YouTubeStudy() {
+  const { user } = useAuth();
+  const scope = user?.uid || "demo";
+  return <YouTubeStudyWorkspace key={scope} scope={scope} />;
+}
+
+function YouTubeStudyWorkspace({ scope }) {
   const [activeCategory, setActiveCategory] = useState("IELTS");
   const [videoInput, setVideoInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeVideo, setActiveVideo] = useLocalStorage("elan.youtube.activeVideo", {
+  const [activeVideo, setActiveVideo] = useLocalStorage(scopedKey("elan.youtube.activeVideo", scope), {
     id: "",
     title: "Paste a YouTube URL to start",
   });
-  const [notes, setNotes] = useLocalStorage("elan.youtube.notes", {});
-  const [savedSessions, setSavedSessions] = useLocalStorage("elan.youtube.savedSessions", []);
+  const [notes, setNotes] = useLocalStorage(scopedKey("elan.youtube.notes", scope), {});
+  const [savedSessions, setSavedSessions] = useLocalStorage(scopedKey("elan.youtube.savedSessions", scope), []);
   const [sessionMode, setSessionMode] = useState(false);
   const [flashcardMessage, setFlashcardMessage] = useState("");
   const [pendingFlashcard, setPendingFlashcard] = useState(null);

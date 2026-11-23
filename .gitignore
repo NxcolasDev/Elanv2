@@ -16,6 +16,9 @@ build/
 .env.*.local
 **/.env.*.local
 
+.env.*
+**/.env.*
+
 # Keep templates committed
 !.env.example
 !**/.env.example
@@ -23,3 +26,25 @@ build/
 # Logs and local-only files
 npm-debug.log*
 Dockerfile.local
+
+# Terraform state, local inputs, plans and credentials
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+*.tfbackend
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+gha-creds-*.json
+application_default_credentials.json
+*service-account*.json
+*firebase-adminsdk*.json
+*.pem
+*.key
+*.p12

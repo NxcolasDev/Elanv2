@@ -4,7 +4,9 @@ import AiUnavailableNotice from "./AiUnavailableNotice";
 import lumi from "../assets/lumi.png";
 import { askStudyAssistant } from "../services/studyAssistant";
 import { createStudyNote } from "../services/notesStorage";
-import { AI_UNAVAILABLE_MESSAGE, isAiUnavailableError } from "../services/api";
+import { AI_UNAVAILABLE_MESSAGE, getApiErrorMessage, isAiUnavailableError } from "../services/api";
+
+import { useActiveExam } from "../hooks/useActiveExam";
 
 const quickPrompts = [
   "Por que isso e util?",
@@ -13,7 +15,8 @@ const quickPrompts = [
   "Como um Band 7 responderia?",
 ];
 
-export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF study support" }) {
+export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF study support", exam }) {
+  const { activeExam } = useActiveExam();
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([
@@ -38,6 +41,7 @@ export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF
         question: cleanQuestion,
         context,
         focus,
+        exam: exam || activeExam,
       });
 
       setMessages((current) => [...current, { role: "assistant", content: answer }]);
@@ -49,7 +53,7 @@ export default function AIStudyAssistant({ context = "", focus = "IELTS and DELF
           aiUnavailable: isAiUnavailableError(error),
           content: isAiUnavailableError(error)
             ? AI_UNAVAILABLE_MESSAGE
-            : "Nao consegui acessar o servico de IA agora. Tente novamente quando o backend estiver disponivel.",
+            : getApiErrorMessage(error, "Não foi possível acessar o servi?o de IA agora."),
         },
       ]);
     } finally {

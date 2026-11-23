@@ -1,14 +1,12 @@
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { exams, getStoredExam, setStoredExam } from "../data/exams";
+import { setStoredExam } from "../data/exams";
+import { useActiveExam } from "../hooks/useActiveExam";
 
 export default function ExamSwitcher({ compact = false }) {
-  const [activeExam, setActiveExam] = useState(getStoredExam);
-  const exam = exams[activeExam] || exams.IELTS;
+  const { activeExam, exam } = useActiveExam();
 
   const toggleExam = () => {
     const nextExam = activeExam === "IELTS" ? "DELF" : "IELTS";
-    setActiveExam(nextExam);
     setStoredExam(nextExam);
   };
 

@@ -24,14 +24,9 @@ export function AuthProvider({ children }) {
     const firebaseUser = result.user;
 
     try {
-      await api.post("/api/users/sync", {
-        firebaseUid: firebaseUser.uid,
-        name: firebaseUser.displayName,
-        email: firebaseUser.email,
-        photoURL: firebaseUser.photoURL,
-      });
-    } catch (err) {
-      console.warn("Login feito, mas sync com backend falhou:", err);
+      await api.post("/api/users/sync");
+    } catch {
+      console.warn("Não foi possível sincronizar o perfil.");
     }
 
     return firebaseUser;

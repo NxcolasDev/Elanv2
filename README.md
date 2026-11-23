@@ -1,234 +1,129 @@
-# ELAN
+# ÉLAN
 
-<p align="center">
-  <img src="./Assets/banner.png" width="100%" />
-</p>
+<p align="center"><img src="./Assets/banner.png" width="100%" alt="ÉLAN"></p>
 
-<p align="center">
-  Plataforma full stack de aprendizado de idiomas para IELTS e DELF/DALF, com estudos guiados, simulados, flashcards e recursos opcionais de Inteligencia Artificial.
-</p>
+[![React](https://img.shields.io/badge/React-UI-20232A?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-24-339933?logo=node.js)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-storage-47A248?logo=mongodb)](https://www.mongodb.com/)
+[![Terraform](https://img.shields.io/badge/Terraform-GCP-844FBA?logo=terraform)](https://developer.hashicorp.com/terraform)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite" />
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js" />
-  <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express" />
-  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb" />
-  <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss" />
-</p>
+## Project Overview
 
-## Sobre o projeto
+ÉLAN is a full-stack study workspace for IELTS and DELF/DALF practice. The browser provides bundled study material and stores personal study progress locally. The API manages authenticated profiles, published content, and optional Gemini features.
 
-ELAN e uma plataforma criada para portfolio, focada em centralizar ferramentas de estudo para exames internacionais de idiomas.
+## Problem & Solution
 
-O projeto inclui treino de reading, listening, writing, speaking, modelos de resposta, flashcards, historico de desempenho, estudos com YouTube e a assistente Lumi. As chamadas de IA passam sempre pelo backend para que chaves privadas nunca sejam expostas no navegador.
+Exam preparation often spreads practice material, review schedules, and feedback across several tools. ÉLAN brings them together in a single workspace with exam-specific practice and a repeatable review routine.
 
-## Funcionalidades
+## Features
 
-- Preparacao IELTS e DELF/DALF.
-- Simulados e treinos por habilidade.
-- Correcao de writing e speaking com IA, quando configurada.
-- Assistente de estudos Lumi.
-- Geracao opcional de modelos e provas de reading via IA.
-- Flashcards e anotacoes de estudo.
-- Autenticacao com Firebase.
-- Persistencia com MongoDB.
-
-## Limitacoes da demonstracao publica
-
-As funcionalidades de Inteligência Artificial dependem de uma chave de API própria. Por questões de segurança e custo, elas não estão disponíveis na demonstração pública. Consulte o README para saber como configurar.
-
-Quando `AI_API_KEY` nao estiver configurada, o backend responde de forma controlada e a interface mostra uma mensagem amigavel. O restante da aplicacao continua funcionando.
-
-## Tecnologias
-
-Frontend:
-
-- React
-- Vite
-- Tailwind CSS
-- React Router
-- Firebase Auth
-- Recharts
-- Axios
-
-Backend:
-
-- Node.js
-- Express
-- MongoDB
-- Mongoose
-- Firebase Admin SDK
-- Axios
-- dotenv
-- Groq com endpoint OpenAI-compatible
-
-## Estrutura
-
-```text
-.
-├── backend/       API Express, modelos MongoDB, rotas e provider de IA
-├── frontend/      Aplicacao React, paginas, componentes e servicos HTTP
-├── docs/          Documentacao tecnica complementar
-├── Assets/        Imagens usadas no README
-└── docker-compose.yml
-```
-
-## Instalacao local
-
-Clone o repositorio:
-
-```bash
-git clone https://github.com/NxcolasDev/Elanv2
-cd Elanv2
-```
-
-Instale as dependencias:
-
-```bash
-cd backend
-npm install
-
-cd ../frontend
-npm install
-```
-
-Suba um MongoDB local, se nao for usar MongoDB Atlas:
-
-```bash
-docker compose up -d
-```
-
-## Variaveis de ambiente
-
-Crie arquivos locais a partir dos exemplos:
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
-
-Backend (`backend/.env`):
-
-| Variavel | Obrigatoria | Proposito |
-| --- | --- | --- |
-| `PORT` | Nao | Porta local da API Express. Em deploy, a plataforma geralmente injeta esse valor. |
-| `MONGO_URI` | Sim | String de conexao com MongoDB local ou MongoDB Atlas. |
-| `CORS_ORIGIN` | Sim | Lista de origens do frontend autorizadas a chamar a API. Separe multiplas URLs por virgula. |
-| `NODE_ENV` | Sim | Use `development` localmente e `production` em deploy. |
-| `AI_API_KEY` | Nao | Chave privada da Groq para recursos de IA. Se ficar vazia, a IA e desativada com mensagem amigavel. |
-
-Frontend (`frontend/.env`):
-
-| Variavel | Obrigatoria | Proposito |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | Sim | URL publica do backend. Localmente: `http://localhost:5000`. |
-| `VITE_FIREBASE_API_KEY` | Sim | Chave publica do app web Firebase. |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Sim | Dominio de autenticacao Firebase. |
-| `VITE_FIREBASE_PROJECT_ID` | Sim | ID do projeto Firebase. |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Sim | Bucket associado ao projeto Firebase. |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sim | Sender ID do Firebase. |
-| `VITE_FIREBASE_APP_ID` | Sim | App ID do Firebase Web App. |
-
-Importante: valores `VITE_*` ficam publicos no JavaScript do navegador. Nunca coloque segredos de backend no frontend.
-
-## Execucao local
-
-Backend:
-
-```bash
-cd backend
-npm run dev
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm run dev
-```
-
-Acesse o frontend em `http://localhost:5173`.
-
-## Build de producao
-
-Frontend:
-
-```bash
-cd frontend
-npm run build
-npm run preview
-```
-
-Backend:
-
-```bash
-cd backend
-npm start
-```
-
-## Deploy recomendado
-
-Recomendacao para portfolio:
-
-- Frontend na Vercel.
-- Backend no Render ou Railway.
-- Banco de dados no MongoDB Atlas.
-
-Essa combinacao e simples para projetos full stack separados: a Vercel e excelente para Vite/React, enquanto Render/Railway executam o servidor Express de forma direta com variaveis privadas. MongoDB Atlas evita depender de um banco rodando na mesma maquina do deploy.
-
-Configuracao de deploy:
-
-Frontend:
-
-- Root directory: `frontend`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Variaveis: todas as `VITE_*`
-- `VITE_API_BASE_URL`: URL publica do backend
-
-Backend:
-
-- Root directory: `backend`
-- Build command: `npm install`
-- Start command: `npm start`
-- Variaveis: `MONGO_URI`, `CORS_ORIGIN`, `NODE_ENV=production` e opcionalmente `AI_API_KEY`
-- `CORS_ORIGIN`: URL publica do frontend
-
-## Seguranca
-
-- Nunca commite arquivos `.env`.
-- Nunca commite chaves de API, tokens, senhas ou URLs privadas de banco.
-- Os arquivos `.env.example` usam apenas valores ficticios e podem ser enviados ao GitHub.
-- Se uma chave real for exposta, revogue ou rotacione no painel do provedor. Apagar o commit mais recente nao remove o segredo do historico.
+- Reading, Listening, Writing, and Speaking practice, plus a four-skill simulation.
+- Models and vocabulary resources, Lumi study assistance, YouTube embeds, and curated news.
+- Flashcards with spaced repetition, notes, study schedules, achievement indicators, and exam history.
+- Google sign-in through Firebase and an administrative publishing workflow.
+- Optional Gemini feedback and practice for signed-in learners.
 
 ## Screenshots
 
-### Dashboard
+| Dashboard | Flashcards |
+| --- | --- |
+| ![Dashboard](./Assets/Dashboard.png) | ![Flashcards](./Assets/flashcards.png) |
 
-![Dashboard](./Assets/Dashboard.png)
+| Models | Simulation |
+| --- | --- |
+| ![Models](./Assets/Models.png) | ![Simulation](./Assets/Simulation.png) |
 
-### Flashcards
+[YouTube Study screenshot](./Assets/Youtube.png)
 
-![Flashcards](./Assets/flashcards.png)
+## Tech Stack
 
-### Models
+React, Vite, Tailwind CSS, React Router, Firebase Authentication, Node.js, Express, Mongoose, MongoDB, Google Gen AI SDK, AJV, Docker Compose, Terraform, and GitHub Actions.
 
-![Models](./Assets/Models.png)
+## System Architecture
 
-### YouTube Study
+Vite builds the React SPA. Firebase signs users in and issues ID tokens that Express verifies for private operations. MongoDB stores profiles, API flashcards, and curated content. Study history, notes, schedules, and the flashcard screen use browser storage. [System diagram](docs/architecture/SYSTEM_ARCHITECTURE.md) · [Technical documentation](docs/TECHNICAL_DOCUMENTATION.md)
 
-![YouTube Study](./Assets/Youtube.png)
+## AI Engineering
 
-### Full Simulation
+The backend applies versioned IELTS and DELF prompts, validates structured output, and limits request size, concurrency, output tokens, and attempts. The practice score is an estimate. Speaking feedback uses transcripts. [AI harness](docs/AI_HARNESS.md)
 
-![Simulation](./Assets/Simulation.png)
+## Admin System
 
-## Documentacao complementar
+Sign in and open /admin with a Firebase account granted the admin claim. Admins can preview exercises and models, save and edit drafts, review content, and publish or unpublish it. [Role setup and workflow](docs/ADMIN_SYSTEM.md)
 
-- `docs/TECHNICAL_DOCUMENTATION.md`
-- `docs/ELECTRON_PREPARATION.md`
+## Google Cloud Architecture
 
-## Autor
+The proposed environment uses Firebase Hosting for the SPA, Cloud Run for Express, Artifact Registry for images, Secret Manager for credentials, and Cloud Logging and Monitoring. MongoDB Atlas is the external database. [GCP design](docs/architecture/GCP_ARCHITECTURE.md)
+
+## Terraform Infrastructure
+
+The dev, staging, and production roots share one module. Validation runs without a remote backend. [Terraform guide](infra/terraform/README.md)
+
+## Local Development
+
+Clone [NxcolasDev/Elanv2](https://github.com/NxcolasDev/Elanv2) and use Node.js 24 with npm. Copy backend/.env.example and frontend/.env.example to .env in their respective folders. Configure Firebase on both sides and start MongoDB.
+
+```bash
+npm ci --prefix backend
+npm ci --prefix frontend
+docker compose up -d mongo
+npm run dev --prefix backend
+# In a separate terminal:
+npm run dev --prefix frontend
+```
+
+Open http://localhost:5173. The API lives at http://localhost:5000 and exposes /api/health and /api/ready.
+
+## Docker Setup
+
+Compose starts MongoDB with a named volume. Mongo Express is available on the local loopback at port 8081. The optional api profile runs Express in a container with a read-only ADC file specified through ELAN_ADC_FILE. Use `docker compose --profile api up --build` after setting that path and backend/.env. [Container and database details](docs/TECHNICAL_DOCUMENTATION.md)
+
+## Environment Variables
+
+| Scope | Variables |
+| --- | --- |
+| Backend | `PORT`, `MONGO_URI`, `CORS_ORIGIN`, `NODE_ENV`, `FIREBASE_PROJECT_ID` |
+| Local authentication | Application Default Credentials, optionally pointed to by `GOOGLE_APPLICATION_CREDENTIALS` |
+| AI | `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_CONCURRENCY`, `AI_DAILY_ATTEMPTS` |
+| Frontend | `VITE_API_BASE_URL` and public `VITE_FIREBASE_*` configuration |
+
+See the commented [backend template](backend/.env.example) and [frontend template](frontend/.env.example). Leave the backend Gemini key empty for local study without remote AI.
+
+## Testing
+
+```bash
+npm run check --prefix backend
+npm test --prefix backend
+npm run lint --prefix frontend
+npm test --prefix frontend
+npm run build --prefix frontend
+docker compose config --quiet
+terraform fmt -check -recursive infra/terraform
+```
+
+The backend suite tests the official SDK against a local mock server and supports an isolated MongoDB integration test. [Testing guide](docs/TESTING_GUIDE.md)
+
+## Security
+
+Access control uses Firebase identities and per-user database filters. Administrative routes also check token revocation. Keep backend credentials out of Git, Vite variables, and container layers. [Security documentation and historical key finding](docs/SECURITY.md)
+
+## Deployment Strategy
+
+The verification workflow runs lint, tests, build, dependency audits, Docker, and Terraform. The manual backend release workflow requires a repository flag, the default branch, a configured environment, and Workload Identity Federation. [Future deployment guide](docs/GCP_DEPLOYMENT_GUIDE.md)
+
+## Roadmap
+
+- Validate Gemini feedback against an educator-reviewed dataset in both languages.
+- Expand curated question banks and align practice scores with exam rubrics.
+- Add cross-device study sync with a migration for browser data.
+- Revisit the [Electron preparation](docs/ELECTRON_PREPARATION.md) after the web release is stable.
+
+## Project Status
+
+**Cloud infrastructure designed and implemented as code, but not deployed to GCP due to cost considerations.**
+
+[Engineering audit](docs/ENGINEERING_AUDIT.md) · [Project structure](docs/PROJECT_STRUCTURE.md) · [Architecture decisions](docs/ARCHITECTURE_DECISIONS.md) · [API reference](docs/API_REFERENCE.md)
+
+## Author
 
 Nicolas Silva

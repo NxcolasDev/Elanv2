@@ -1,8 +1,9 @@
 const express = require("express");
+const { authenticate } = require("../middlewares/authMiddleware");
+const { syncUser, getUser } = require("../controllers/userController");
 const router = express.Router();
 
-const { syncUser, getUser } = require("../controllers/userController");
-
+router.use(authenticate());
 router.post("/sync", syncUser);
 router.get("/:uid", getUser);
 

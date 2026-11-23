@@ -7,7 +7,7 @@ import { expandQuestions, readingContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { saveExamResult } from "../utils/examHistory";
 import { toIELTSBand } from "../utils/scoring";
-import { api, isAiUnavailableError } from "../services/api";
+import { api, getApiErrorMessage, getPublishedContent, isAiUnavailableError } from "../services/api";
 
 function normalizeQuestion(question, index) {
   if (!question || typeof question !== "object") return null;
@@ -30,7 +30,7 @@ function normalizeExam(data, localContent) {
 
   return {
     passage: data?.passage || data?.text || localContent.passage,
-    questions: expandQuestions(questions.length ? questions : localContent.questionSeed, 40),
+    questions: questions.length ? questions : expandQuestions(localContent.questionSeed, 40),
   };
 }
 
@@ -45,6 +45,11 @@ function formatTime(seconds) {
 }
 
 export default function Reading() {
+  const { activeExam } = useActiveExam();
+  return <ReadingPractice key={activeExam} />;
+}
+
+function ReadingPractice() {
   const { activeExam, exam: activeExamMeta, isDelf } = useActiveExam();
   const localContent = readingContent[activeExam] || readingContent.IELTS;
   const localExam = useMemo(
@@ -68,7 +73,7 @@ export default function Reading() {
     [exam]
   );
 
-  const generateExam = useCallback(async () => {
+  const generateExam = useCallback(async (useAi = false, signal) => {
     setLoading(true);
     setError("");
     setAiUnavailable(false);
@@ -76,29 +81,22 @@ export default function Reading() {
     setAnswers({});
 
     try {
-      if (isDelf) {
-        setExam(localExam);
-        return;
-      }
-
-      const response = await api.post("/api/exams/generate", { mode: "reading" }, { timeout: 15000 });
-      setExam(normalizeExam(response.data?.data, localContent));
+      const data = useAi
+        ? (await api.post("/api/exams/generate", { mode: "reading", exam: activeExam }, { signal })).data.data
+        : (await getPublishedContent(activeExam, "reading", signal))[0]?.payload;
+      if (!signal?.aborted) setExam(data ? normalizeExam(data, localContent) : localExam);
     } catch (err) {
-      console.error("Erro ao gerar prova:", err);
+      if (signal?.aborted) return;
       setExam(localExam);
       if (isAiUnavailableError(err)) {
         setAiUnavailable(true);
         return;
       }
-      setError(
-        isDelf
-          ? "Mode DELF/DALF actif avec banque locale en français."
-          : "Usei a banca local porque a geração por IA não respondeu agora."
-      );
+      if (useAi) setError(getApiErrorMessage(err, "Usei a banca local porque a geração por IA falhou."));
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [isDelf, localExam, localContent]);
+  }, [activeExam, localExam, localContent]);
 
   const selectAnswer = (questionId, option) => {
     setAnswers((previousAnswers) => ({
@@ -135,11 +133,9 @@ export default function Reading() {
   };
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      generateExam();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => generateExam(false, controller.signal), 0);
+    return () => { window.clearTimeout(timeoutId); controller.abort(); };
   }, [activeExam, generateExam]);
 
   useEffect(() => {
@@ -178,11 +174,16 @@ export default function Reading() {
                 <p className="text-lg font-black text-purple-100">{formatTime(timeLeft)}</p>
               </div>
               <button
-                onClick={generateExam}
+                onClick={() => generateExam()}
+                disabled={loading}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/8 px-4 py-3 text-sm font-bold text-gray-100 transition hover:bg-white/12"
               >
                 <RotateCcw size={16} />
                 Nova prova
+              </button>
+              <button type="button" onClick={() => generateExam(true)} disabled={loading}
+                className="rounded-xl border border-purple-300/25 px-4 py-3 text-sm font-bold text-purple-100 disabled:opacity-50">
+                Gerar prática com IA
               </button>
             </div>
           </div>

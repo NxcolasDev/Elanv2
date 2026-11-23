@@ -8,8 +8,9 @@ import SpeakingTranscript from "../components/speaking/SpeakingTranscript";
 import { speakingBanks } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
+import { getActiveStorageUser } from "../utils/storageScope";
 import { saveExamResult } from "../utils/examHistory";
-import { api, isAiUnavailableError } from "../services/api";
+import { api, getApiErrorMessage, isAiUnavailableError } from "../services/api";
 
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -90,32 +91,35 @@ export default function Speaking() {
       return;
     }
 
+    if (evaluating) return;
+    const userId = getActiveStorageUser();
     setEvaluating(true);
 
     try {
       const response = await api.post("/api/exams/generate", {
         mode: "speaking",
-        text: `${activeExamMeta.label} ${isDelf ? "French DELF/DALF" : "IELTS English"} speaking answer:\n${fullText}`,
+        exam: activeExam,
+        text: fullText,
+        context: Object.values(questions || {}).flat().join("\n"),
       });
 
       const feedback = parseFeedback(response.data?.feedback);
-      setResult(feedback);
+      setResult({ ...feedback, exam: activeExam });
 
       if (Number.isFinite(Number(feedback?.band))) {
         saveExamResult({
           skill: "Speaking",
           exam: activeExam,
-          score: Number(feedback.band),
+          score: isDelf ? Number(feedback.band) * 4 : Number(feedback.band),
           label: mode === "full" ? `${activeExamMeta.label} Speaking Simulado` : `${activeExamMeta.label} Speaking Treino`,
           durationMinutes: 15,
-        });
+        }, userId);
       }
     } catch (err) {
-      console.error("Erro ao avaliar speaking:", err);
       setResult(
         isAiUnavailableError(err)
           ? { aiUnavailable: true }
-          : { error: "Erro ao avaliar. Tente novamente em instantes." }
+          : { error: getApiErrorMessage(err, "Erro ao avaliar. Tente novamente em instantes.") }
       );
     } finally {
       setEvaluating(false);
@@ -221,7 +225,7 @@ export default function Speaking() {
           speechError={speechError}
         />
 
-        <SpeakingResult result={result} />
+        <SpeakingResult result={!result?.exam || result.exam === activeExam ? result : null} isDelf={isDelf} />
       </div>
     </MainLayout>
   );

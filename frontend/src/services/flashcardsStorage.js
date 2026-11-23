@@ -1,4 +1,4 @@
-import { scopedKey } from "../utils/storageScope";
+import { scopedKey } from "../utils/storageScope.js";
 
 const FLASHCARDS_KEY = "elan.flashcards";
 const DEFAULT_EASE_FACTOR = 2.5;

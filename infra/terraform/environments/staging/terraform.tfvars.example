@@ -1,0 +1,15 @@
+project_id = "elan-staging-example"
+region     = "us-central1"
+
+# Bootstrap supporting resources before supplying an image and secret versions.
+release = null
+# release = {
+#   image       = "REGION-docker.pkg.dev/PROJECT/REPOSITORY/backend@sha256:DIGEST"
+#   cors_origin = "https://YOUR-SITE.web.app"
+#   network     = "existing-vpc"
+#   subnetwork  = "existing-regional-subnet"
+#   secret_versions = { GEMINI_API_KEY = "1", MONGO_URI = "1" }
+# }
+
+monitoring_enabled    = false
+notification_channels = []

@@ -1,32 +1,22 @@
 const User = require("../models/user");
 
-// cria ou atualiza usuário (sync do login)
 exports.syncUser = async (req, res) => {
-  const { firebaseUid, name, email, photoURL } = req.body;
-
-  let user = await User.findOne({ firebaseUid });
-
-  if (!user) {
-    user = await User.create({
-      firebaseUid,
-      name,
-      email,
-      photoURL,
-    });
+  const { uid, name, email, picture } = req.user;
+  const filter = { firebaseUid: uid };
+  try {
+    const user = await User.findOneAndUpdate(filter, {
+      $setOnInsert: { firebaseUid: uid, name, email, photoURL: picture },
+    }, { upsert: true, returnDocument: "after" });
+    return res.json(user);
+  } catch (error) {
+    if (error.code !== 11000) throw error;
+    return res.json(await User.findOne(filter));
   }
-
-  return res.json(user);
 };
 
-// buscar usuário
 exports.getUser = async (req, res) => {
-  const { uid } = req.params;
-
-  const user = await User.findOne({ firebaseUid: uid });
-
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
+  if (req.params.uid !== req.user.uid) return res.status(403).json({ error: "Acesso negado." });
+  const user = await User.findOne({ firebaseUid: req.user.uid });
+  if (!user) return res.status(404).json({ error: "User not found" });
   return res.json(user);
 };

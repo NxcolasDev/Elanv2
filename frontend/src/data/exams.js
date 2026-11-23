@@ -32,7 +32,8 @@ export const exams = {
 
 export function getStoredExam() {
   try {
-    return window.localStorage.getItem("elan.activeExam") || "IELTS";
+    const saved = window.localStorage.getItem("elan.activeExam");
+    return Object.hasOwn(exams, saved) ? saved : "IELTS";
   } catch {
     return "IELTS";
   }
@@ -41,8 +42,8 @@ export function getStoredExam() {
 export function setStoredExam(examId) {
   try {
     window.localStorage.setItem("elan.activeExam", examId);
-    window.dispatchEvent(new CustomEvent("elan:exam-change", { detail: examId }));
   } catch {
-    // Browser storage may be unavailable in restricted contexts.
+    // The active session can still switch exams when persistence is unavailable.
   }
+  window.dispatchEvent(new CustomEvent("elan:exam-change", { detail: examId }));
 }

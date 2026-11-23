@@ -4,6 +4,7 @@ import AiUnavailableNotice from "../components/AiUnavailableNotice";
 import MainLayout from "../layouts/MainLayout";
 import { writingContent } from "../data/examContent";
 import { useActiveExam } from "../hooks/useActiveExam";
+import { getActiveStorageUser } from "../utils/storageScope";
 import { saveExamResult } from "../utils/examHistory";
 import {
   Bar,
@@ -25,7 +26,7 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { api, isAiUnavailableError } from "../services/api";
+import { api, getApiErrorMessage, isAiUnavailableError } from "../services/api";
 
 const chartExamples = [
   {
@@ -78,6 +79,7 @@ export default function Writing() {
   const [task, setTask] = useState("task2");
   const [topics, setTopics] = useState([]);
   const [text, setText] = useState("");
+  const [correctionError, setCorrectionError] = useState("");
   const [correction, setCorrection] = useState(null);
   const [aiUnavailable, setAiUnavailable] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -125,47 +127,32 @@ export default function Writing() {
       setTopics(
         nextTopics.length ? nextTopics : content.topics
       );
-    } catch (err) {
-      console.error(err);
+    } catch {
       setTopics(content.topics);
     }
   }, [task, isDelf, content]);
 
   const handleCorrection = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
+    setCorrection(null);
+    setCorrectionError("");
 
+    const userId = getActiveStorageUser();
     setLoading(true);
     setAiUnavailable(false);
 
     try {
       const response = await api.post("/api/exams/generate", {
         mode: "correction",
-        text: `
-${activeExamMeta.label}
-${isDelf ? "French DELF/DALF" : "IELTS English"}
-
-Criteria:
-${content.criteria.join(", ")}
-
-Minimum words: ${minWords}
-
-Student answer:
-${text}
-
-Return ONLY valid JSON:
-{
-  "band": number,
-  "feedback": "short feedback",
-  "strengths": [],
-  "improvements": []
-}
-`,
+        exam: activeExam,
+        text,
+        context: [task, selectedTopic, `Minimum words: ${minWords}`].filter(Boolean).join("\n"),
       });
 
       const nextCorrection =
         response.data?.correction || response.data;
 
-      setCorrection(nextCorrection);
+      setCorrection({ ...nextCorrection, exam: activeExam });
 
       if (
         Number.isFinite(Number(nextCorrection?.band))
@@ -173,17 +160,14 @@ Return ONLY valid JSON:
         saveExamResult({
           skill: "Writing",
           exam: activeExam,
-          score: Number(nextCorrection.band),
+          score: isDelf ? Number(nextCorrection.band) * 4 : Number(nextCorrection.band),
           label: `${activeExamMeta.label} Writing`,
           durationMinutes: task === "task1" ? 20 : 40,
-        });
+        }, userId);
       }
     } catch (err) {
-      console.error(err);
-      if (isAiUnavailableError(err)) {
-        setCorrection(null);
-        setAiUnavailable(true);
-      }
+      if (isAiUnavailableError(err)) setAiUnavailable(true);
+      else setCorrectionError(getApiErrorMessage(err, "Erro ao corrigir a resposta."));
     } finally {
       setLoading(false);
     }
@@ -446,8 +430,9 @@ Return ONLY valid JSON:
         </section>
 
         {aiUnavailable && <AiUnavailableNotice />}
+        {correctionError && <p role="alert" className="text-red-200">{correctionError}</p>}
 
-        {correction && (
+        {correction?.exam === activeExam && (
           <section className="elan-glass rounded-3xl p-6">
 
             <div className="flex items-center justify-between">
@@ -458,7 +443,7 @@ Return ONLY valid JSON:
                 </p>
 
                 <h2 className="mt-2 text-5xl font-black text-purple-400">
-                  Band {correction.band}
+                  {isDelf ? `${correction.band}/25` : `Band ${correction.band}`}
                 </h2>
               </div>
 

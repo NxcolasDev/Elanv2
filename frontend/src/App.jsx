@@ -1,78 +1,84 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthProvider";
-import Dashboard from "./pages/Dashboard";
-import Flashcards from "./pages/Flashcards";
-import History from "./pages/History";
 import Home from "./pages/Home";
-import Listening from "./pages/Listening";
 import Login from "./pages/Login";
-import Models from "./pages/Models";
-import Notes from "./pages/Notes";
-import Reading from "./pages/Reading";
-import Schedule from "./pages/Schedule";
-import Simulado from "./pages/Simulado";
-import Speaking from "./pages/Speaking";
-import Writing from "./pages/Writing";
-import News from "./pages/News";
-import YouTubeStudy from "./pages/YouTubeStudy";
+
+const Admin = lazy(() => import("./pages/Admin"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Flashcards = lazy(() => import("./pages/Flashcards"));
+const History = lazy(() => import("./pages/History"));
+const Listening = lazy(() => import("./pages/Listening"));
+const Models = lazy(() => import("./pages/Models"));
+const Notes = lazy(() => import("./pages/Notes"));
+const Reading = lazy(() => import("./pages/Reading"));
+const Schedule = lazy(() => import("./pages/Schedule"));
+const Simulado = lazy(() => import("./pages/Simulado"));
+const Speaking = lazy(() => import("./pages/Speaking"));
+const Writing = lazy(() => import("./pages/Writing"));
+const News = lazy(() => import("./pages/News"));
+const YouTubeStudy = lazy(() => import("./pages/YouTubeStudy"));
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/simulado" element={<Simulado />} />
-          <Route path="/writing" element={<Writing />} />
-          <Route path="/speaking" element={<Speaking />} />
-          <Route path="/listening" element={<Listening />} />
-          <Route path="/reading" element={<Reading />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/models" element={<Models />} />
-          <Route path="/youtube" element={<YouTubeStudy />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/flashcards"
-            element={
-              <ProtectedRoute>
-                <Flashcards />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <History />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notes"
-            element={
-              <ProtectedRoute>
-                <Notes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/schedule"
-            element={
-              <ProtectedRoute>
-                <Schedule />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <Suspense fallback={<div role="status" className="grid min-h-screen place-items-center bg-[#09090f] text-white">Carregando ÉLAN…</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/simulado" element={<Simulado />} />
+            <Route path="/writing" element={<Writing />} />
+            <Route path="/speaking" element={<Speaking />} />
+            <Route path="/listening" element={<Listening />} />
+            <Route path="/reading" element={<Reading />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/models" element={<Models />} />
+            <Route path="/youtube" element={<YouTubeStudy />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/flashcards"
+              element={
+                <ProtectedRoute>
+                  <Flashcards />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notes"
+              element={
+                <ProtectedRoute>
+                  <Notes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/schedule"
+              element={
+                <ProtectedRoute>
+                  <Schedule />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   );

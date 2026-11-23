@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BookMarked, CheckCircle2, Copy, Loader2, Mic, PenLine, Sparkles } from "lucide-react";
 import AIStudyAssistant from "../components/AIStudyAssistant";
 import AiUnavailableNotice from "../components/AiUnavailableNotice";
@@ -12,9 +12,11 @@ import {
   vocabularyStructures,
   writingModels,
 } from "../data/modelsContent";
+import { useAuth } from "../hooks/useAuth";
+import { scopedKey } from "../utils/storageScope";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { generateStudyModel } from "../services/studyAssistant";
-import { isAiUnavailableError } from "../services/api";
+import { getApiErrorMessage, getPublishedContent, isAiUnavailableError } from "../services/api";
 
 const fallbackInsights = {
   whyUseThis: "This structure is useful because it gives your answer a clear job: answer, explain, support, and close.",
@@ -50,11 +52,17 @@ const modelGroups = [
 ];
 
 export default function Models() {
+  const { user } = useAuth();
+  const scope = user?.uid || "demo";
+  return <ModelsWorkspace key={scope} scope={scope} />;
+}
+
+function ModelsWorkspace({ scope }) {
   const [activeCategory, setActiveCategory] = useState("writing");
   const [activeWritingId, setActiveWritingId] = useState(writingModels[0].id);
   const [activeSectionId, setActiveSectionId] = useState(studySections[0].id);
-  const [practiceText, setPracticeText] = useLocalStorage("elan.models.practiceText", "");
-  const [aiModels, setAiModels] = useLocalStorage("elan.models.aiModels", {});
+  const [practiceText, setPracticeText] = useLocalStorage(scopedKey("elan.models.practiceText", scope), "");
+  const [aiModels, setAiModels] = useLocalStorage(scopedKey("elan.models.aiModels", scope), {});
   const [loadingModel, setLoadingModel] = useState(false);
   const [modelError, setModelError] = useState("");
 
@@ -68,6 +76,16 @@ export default function Models() {
     [activeSectionId]
   );
 
+  const modelExam = activeSection.id.startsWith("delf-") ? "DELF" : "IELTS";
+  const [published, setPublished] = useState({});
+  useEffect(() => {
+    const controller = new AbortController();
+    getPublishedContent(modelExam, "modelStudy", controller.signal)
+      .then((items) => setPublished((previous) => ({ ...previous, [modelExam]: items })))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [modelExam]);
+
   const generatedModel = aiModels[activeSection.id];
   const practiceWords = practiceText.trim() ? practiceText.trim().split(/\s+/).length : 0;
   const assistantContext = `${activeSection.label}. ${activeSection.focus}. Current writing model: ${activeWriting.title}.`;
@@ -77,7 +95,7 @@ export default function Models() {
     setModelError("");
 
     try {
-      const nextModel = await generateStudyModel(activeSection.focus);
+      const nextModel = await generateStudyModel(activeSection.focus, modelExam);
 
       if (nextModel) {
         setAiModels({
@@ -89,7 +107,7 @@ export default function Models() {
       setModelError(
         isAiUnavailableError(error)
           ? "AI_UNAVAILABLE"
-          : "AI model generation is unavailable right now. You can keep studying with the local examples."
+          : getApiErrorMessage(error, "Você pode continuar com os exemplos locais.")
       );
     } finally {
       setLoadingModel(false);
@@ -221,6 +239,19 @@ export default function Models() {
                 </p>
               ) : null}
             </section>
+
+            {(published[modelExam] || []).length > 0 && (
+              <section className="elan-glass space-y-3 rounded-3xl p-6">
+                <h2 className="text-xl font-bold">Modelos publicados</h2>
+                {published[modelExam].map(({ id, payload }) => (
+                  <details key={id} className="rounded-xl border border-white/10 p-4">
+                    <summary className="cursor-pointer font-semibold">{payload.title} ? {payload.level}</summary>
+                    <p className="my-3 whitespace-pre-line">{payload.model}</p>
+                    <p className="text-purple-200">{payload.practicePrompt}</p>
+                  </details>
+                ))}
+              </section>
+            )}
 
             {activeCategory === "writing" && (
               <>
@@ -389,7 +420,7 @@ export default function Models() {
           </div>
         </section>
 
-        <AIStudyAssistant context={assistantContext} focus={activeSection.focus} />
+        <AIStudyAssistant exam={modelExam} context={assistantContext} focus={activeSection.focus} />
       </div>
     </MainLayout>
   );

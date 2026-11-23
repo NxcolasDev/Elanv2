@@ -39,7 +39,7 @@ docs/
 Electron main process responsibilities:
 
 - Start the backend automatically.
-- Wait until the backend health check responds.
+- Wait until GET /api/ready returns 200 after MongoDB connects.
 - Open the React app window.
 - Stop the backend process when the desktop app closes.
 
@@ -81,8 +81,8 @@ The second option is easier for portfolio development. The first option is more 
 
 ## What Needs Adapting Later
 
-- Add a backend health endpoint, for example `GET /api/health`.
-- Preserve the existing `GET /api/health` endpoint so Electron can wait for backend readiness.
+- Poll `GET /api/ready` for database readiness and use `GET /api/health` for liveness.
+- Configure a trusted renderer origin and preserve Firebase sign-in and backend token verification.
 - Decide how MongoDB runs in desktop mode.
 - Create Electron main and preload files.
 - Configure packaging with a tool such as Electron Builder.
@@ -106,3 +106,7 @@ Before implementing Electron fully, add:
 - A root `README.md` with setup commands.
 - Optional scripts to start frontend and backend together during development.
 - A decision about local MongoDB versus cloud MongoDB for desktop builds.
+
+## Current backend integration
+
+The API drains connections on SIGTERM. Keep Gemini and MongoDB credentials in the backend process or external service. A distributed desktop package should use a hosted backend for shared secrets and validate its Firebase sign-in flow before release.

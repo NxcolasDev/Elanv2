@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import AiUnavailableNotice from "../AiUnavailableNotice";
 
-export default function SpeakingResult({ result }) {
+export default function SpeakingResult({ result, isDelf }) {
   if (!result) return null;
 
   if (result.aiUnavailable) {
@@ -47,11 +47,11 @@ export default function SpeakingResult({ result }) {
 
         <div className="flex h-40 w-40 flex-col items-center justify-center rounded-full border border-purple-400/20 bg-gradient-to-br from-purple-600/30 to-blue-500/20 shadow-[0_0_60px_rgba(124,58,237,0.35)]">
           <span className="text-sm uppercase tracking-[0.2em] text-purple-200">
-            Band
+            {isDelf ? "Pontos / 25" : "Band"}
           </span>
 
           <span className="mt-2 text-6xl font-black text-white">
-            {band || "-"}
+            {band}
           </span>
         </div>
       </div>
@@ -89,7 +89,11 @@ export default function SpeakingResult({ result }) {
           </div>
         )}
 
-      {result.feedback && (
+      {[["Coerência", result.fluency], ["Vocabulário", result.vocabulary], ["Gramática", result.grammar], ["Pronúncia", result.pronunciation]].map(([label, value]) => value && (
+        <p key={label} className="mt-3 text-gray-200"><strong>{label}</strong> · {value}</p>
+      ))}
+
+      {(result.suggestions || result.feedback) && (
         <div className="mt-8 rounded-3xl border border-purple-500/20 bg-purple-500/10 p-5">
           <div className="mb-3 flex items-center gap-2">
             <Sparkles size={18} className="text-purple-300" />
@@ -100,7 +104,7 @@ export default function SpeakingResult({ result }) {
           </div>
 
           <p className="leading-7 text-gray-200">
-            {result.feedback}
+            {result.suggestions || result.feedback}
           </p>
         </div>
       )}
