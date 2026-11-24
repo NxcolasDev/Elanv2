@@ -109,7 +109,7 @@ Access control uses Firebase identities and per-user database filters. Administr
 
 ## Deployment Strategy
 
-The verification workflow runs lint, tests, build, dependency audits, Docker, and Terraform. The manual backend release workflow requires a repository flag, the default branch, a configured environment, and Workload Identity Federation. [Future deployment guide](docs/GCP_DEPLOYMENT_GUIDE.md)
+The verification workflow runs lint, tests, build, dependency audits, Docker, and Terraform. The manual backend release workflow requires a repository flag, the default branch, a configured environment, and Workload Identity Federation. [Free demo deployment](docs/FREE_DEPLOYMENT_GUIDE.md) · [Future GCP deployment](docs/GCP_DEPLOYMENT_GUIDE.md) · [Visual prompts](docs/VISUAL_PROMPTS.md)
 
 ## Roadmap
 
