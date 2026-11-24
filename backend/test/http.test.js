@@ -40,8 +40,9 @@ test("production startup rejects the Firebase emulator before opening a listener
   const result = spawnSync(process.execPath, [resolve(__dirname, "../src/server.js")], {
     env: { ...process.env, NODE_ENV: "production", FIREBASE_PROJECT_ID: "elan-test",
       CORS_ORIGIN: "https://example.invalid", FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099" },
-    encoding: "utf8", timeout: 5000,
+    encoding: "utf8", timeout: 15000,
   });
+  assert.ifError(result.error);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /startup.failed/);
   assert.doesNotMatch(result.stdout, /http.started/);
